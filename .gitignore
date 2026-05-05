@@ -1,0 +1,70 @@
+# ======================
+# Build (Maven)
+# ======================
+/target/
+!**/src/main/**/target/
+!**/src/test/**/target/
+
+# Maven Wrapper (necessário versionar)
+!.mvn/wrapper/maven-wrapper.jar
+!mvnw
+!mvnw.cmd
+
+# ======================
+# Logs
+# ======================
+*.log
+
+# ======================
+# Arquivos compilados
+# ======================
+*.class
+
+# ======================
+# IDEs
+# ======================
+
+### STS / Eclipse ###
+.apt_generated
+.classpath
+.factorypath
+.project
+.settings/
+.springBeans
+.sts4-cache
+
+### IntelliJ IDEA ###
+.idea/
+*.iws
+*.iml
+*.ipr
+
+### NetBeans ###
+/nbproject/private/
+/nbbuild/
+/dist/
+/nbdist/
+/.nb-gradle/
+build/
+!**/src/main/**/build/
+!**/src/test/**/build/
+
+### VS Code ###
+.vscode/
+
+# ======================
+# Sistema Operacional
+# ======================
+.DS_Store
+Thumbs.db
+
+# ======================
+# Configurações sensíveis
+# ======================
+src/main/resources/application.properties
+src/main/resources/application.yml
+
+# ======================
+# Variáveis de ambiente
+# ======================
+.env
