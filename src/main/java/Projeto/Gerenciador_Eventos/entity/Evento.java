@@ -18,7 +18,7 @@ public class Evento {
 	
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private Long idEvento;
+	private Integer idEvento;
 	
 	private String nomeEvento;
 	private String descricaoEvento;
@@ -44,10 +44,10 @@ public class Evento {
 		this.idStatus = 1;
 	}
 
-	public Long getIdEvento() {
+	public Integer getIdEvento() {
 		return idEvento;
 	}
-	public void setIdEvento(Long idEvento) {
+	public void setIdEvento(Integer idEvento) {
 		this.idEvento = idEvento;
 	}
 	public String getNomeEvento() {
