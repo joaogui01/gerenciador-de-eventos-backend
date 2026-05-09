@@ -1,7 +1,7 @@
 package Projeto.Gerenciador_Eventos.entity;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 
 import Projeto.Gerenciador_Eventos.dto.DadosCadastroEvento;
 import jakarta.persistence.Entity;
@@ -22,7 +22,7 @@ public class Evento {
 	
 	private String nomeEvento;
 	private String descricaoEvento;
-	private LocalDateTime dataHorarioEvento;
+	private LocalDate dataEvento;
 	private String localEvento;
 	private Integer vagasTotaisEvento;
 	private Integer vagasDisponiveisEvento;
@@ -36,7 +36,7 @@ public class Evento {
 	public Evento(DadosCadastroEvento dados) {
 		this.nomeEvento = dados.nomeEvento();
 		this.descricaoEvento = dados.descricaoEvento();
-		this.dataHorarioEvento = dados.dataHorarioEvento();
+		this.dataEvento = dados.dataEvento();
 		this.localEvento = dados.localEvento();
 		this.vagasTotaisEvento = dados.vagasTotaisEvento();
 		this.vagasDisponiveisEvento = dados.vagasDisponiveisEvento();
@@ -62,11 +62,11 @@ public class Evento {
 	public void setDescricaoEvento(String descricaoEvento) {
 		this.descricaoEvento = descricaoEvento;
 	}
-	public LocalDateTime getDataHorarioEvento() {
-		return dataHorarioEvento;
+	public LocalDate getDataEvento() {
+		return dataEvento;
 	}
-	public void setDataHorarioEvento(LocalDateTime dataHorarioEvento) {
-		this.dataHorarioEvento = dataHorarioEvento;
+	public void setDataEvento(LocalDate dataEvento) {
+		this.dataEvento = dataEvento;
 	}
 	public String getLocalEvento() {
 		return localEvento;

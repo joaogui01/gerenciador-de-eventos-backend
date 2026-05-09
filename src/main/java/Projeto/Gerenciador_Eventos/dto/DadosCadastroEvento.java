@@ -1,7 +1,7 @@
 package Projeto.Gerenciador_Eventos.dto;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 
 import jakarta.validation.constraints.FutureOrPresent;
 import jakarta.validation.constraints.NotBlank;
@@ -16,7 +16,7 @@ public record DadosCadastroEvento(
 		String descricaoEvento,
 		
 		@FutureOrPresent
-		LocalDateTime dataHorarioEvento,
+		LocalDate dataEvento,
 		
 		@NotBlank
 		String localEvento,
