@@ -10,7 +10,7 @@ import lombok.EqualsAndHashCode;
 
 @Entity
 @Table
-@EqualsAndHashCode(of = "id")
+@EqualsAndHashCode(of = "idParticipante")
 public class Participante {
 	
 	@Id

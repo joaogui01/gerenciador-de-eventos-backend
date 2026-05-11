@@ -1,6 +1,5 @@
 package Projeto.Gerenciador_Eventos.entity;
 
-import java.time.LocalDate;
 
 import Projeto.Gerenciador_Eventos.dto.DadosCadastroTicket;
 import jakarta.persistence.Entity;
@@ -12,7 +11,7 @@ import lombok.EqualsAndHashCode;
 
 @Entity
 @Table
-@EqualsAndHashCode(of = "id")
+@EqualsAndHashCode(of = "idTicket")
 public class Ticket {
 	
 	@Id
@@ -22,7 +21,6 @@ public class Ticket {
 	private Integer idInscricao;
 	private String codigoHashTicket;
 	private Integer idCheckIn;
-	private LocalDate dataCheckInTicket;
 	private Integer idStatus;
 	
 	public Ticket() {
@@ -33,7 +31,6 @@ public class Ticket {
 		this.idInscricao = dados.idInscricao();
 		this.codigoHashTicket = dados.codigoHashTicket();
 		this.idCheckIn = 2;
-		this.dataCheckInTicket = dados.dataCheckInTicket();
 		this.idStatus = 1;
 	}
 
@@ -60,12 +57,6 @@ public class Ticket {
 	}
 	public void setIdCheckIn(Integer idCheckIn) {
 		this.idCheckIn = idCheckIn;
-	}
-	public LocalDate getDataCheckInTicket() {
-		return dataCheckInTicket;
-	}
-	public void setDataCheckInTicket(LocalDate dataCheckInTicket) {
-		this.dataCheckInTicket = dataCheckInTicket;
 	}
 	public Integer getIdStatus() {
 		return idStatus;

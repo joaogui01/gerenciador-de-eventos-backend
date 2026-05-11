@@ -12,7 +12,7 @@ import lombok.EqualsAndHashCode;
 
 @Entity
 @Table
-@EqualsAndHashCode(of = "id")
+@EqualsAndHashCode(of = "idInscricao")
 public class Inscricao {
 	
 	@Id
