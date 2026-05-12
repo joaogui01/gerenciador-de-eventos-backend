@@ -1,74 +1,82 @@
 package Projeto.Gerenciador_Eventos.entity;
 
-import java.time.LocalDate;
+import jakarta.persistence.*;
+import java.time.LocalDateTime;
+import java.util.Objects;
 
-import Projeto.Gerenciador_Eventos.dto.DadosCadastroInscricao;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
-import lombok.EqualsAndHashCode;
+import Projeto.Gerenciador_Eventos.entity.enums.StatusGeral;
 
 @Entity
-@Table
-@EqualsAndHashCode(of = "idInscricao")
+@Table(name = "inscricao")
 public class Inscricao {
-	
-	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private Integer idInscricao;
-	
-	private Integer idEvento;
-	private Integer idParticipante;
-	private LocalDate dataInscricao;
-	private Integer idStatus;
-	
-	public Inscricao() {
-		
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long idInscricao;
+
+    @ManyToOne
+    @JoinColumn(name = "id_evento", nullable = false)
+    private Evento evento;
+
+    @ManyToOne
+    @JoinColumn(name = "id_participante", nullable = false)
+    private Participante participante;
+
+    @Column(name = "data_inscricao", nullable = false)
+    private LocalDateTime dataInscricao;
+
+    @Enumerated(EnumType.STRING) 
+    @Column(name = "status_inscricao", nullable = false)
+    private StatusGeral statusGeral;
+
+    public Inscricao() {
+    }
+
+    public Long getIdInscricao() {
+        return idInscricao;
+    }
+    public void setIdInscricao(Long idInscricao) {
+        this.idInscricao = idInscricao;
+    }
+    public Evento getEvento() {
+        return evento;
+    }
+    public void setEvento(Evento evento) {
+        this.evento = evento;
+    }
+    public Participante getParticipante() {
+        return participante;
+    }
+    public void setParticipante(Participante participante) {
+        this.participante = participante;
+    }
+    public LocalDateTime getDataInscricao() {
+        return dataInscricao;
+    }
+    public void setDataInscricao(LocalDateTime dataInscricao) {
+        this.dataInscricao = dataInscricao;
+    }
+	public StatusGeral getStatusGeral() {
+		return statusGeral;
 	}
-	
-	public Inscricao(DadosCadastroInscricao dados) {
-		this.idEvento = dados.idEvento();
-		this.idParticipante = dados.idParticipante();
-		this.dataInscricao = dados.dataInscricao();
-		this.idStatus = 1;
+	public void setStatusGeral(StatusGeral statusGeral) {
+		this.statusGeral= statusGeral;
 	}
 
-	public Integer getIdInscricao() {
-		return idInscricao;
+	@Override
+	public int hashCode() {
+		return Objects.hash(idInscricao);
 	}
-	public void setIdInscricao(Integer idInscricao) {
-		this.idInscricao = idInscricao;
-	}
-	public Integer getIdEvento() {
-		return idEvento;
-	}
-	public void setIdEvento(Integer idEvento) {
-		this.idEvento = idEvento;
-	}
-	public Integer getIdParticipante() {
-		return idParticipante;
-	}
-	public void setIdParticipante(Integer idParticipante) {
-		this.idParticipante = idParticipante;
-	}
-	public LocalDate getDataInscricao() {
-		return dataInscricao;
-	}
-	public Integer getIdStatus() {
-		return idStatus;
-	}
-	public void setIdStatus(Integer idStatus) {
-		this.idStatus = idStatus;
-	}
-	public void setDataInscricao(LocalDate dataInscricao) {
-		this.dataInscricao = dataInscricao;
-	}
-	public void inativar() {
-		this.idStatus = 2;
-	}
-	public void reativar() {
-		this.idStatus = 1;
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		Inscricao other = (Inscricao) obj;
+		return Objects.equals(idInscricao, other.idInscricao);
 	}
 }

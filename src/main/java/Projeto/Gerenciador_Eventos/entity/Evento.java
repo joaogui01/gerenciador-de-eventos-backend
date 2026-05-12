@@ -2,54 +2,61 @@ package Projeto.Gerenciador_Eventos.entity;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.Objects;
 
 import Projeto.Gerenciador_Eventos.dto.DadosAtualizarEvento;
-import Projeto.Gerenciador_Eventos.dto.DadosCadastroEvento;
+import Projeto.Gerenciador_Eventos.entity.enums.StatusGeral;
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import jakarta.validation.Valid;
-import lombok.EqualsAndHashCode;
 
 @Entity
-@Table
-@EqualsAndHashCode(of = "idEvento")
+@Table(name = "evento")
 public class Evento {
-	
-	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private Integer idEvento;
-	
-	private String nomeEvento;
-	private String descricaoEvento;
-	private LocalDate dataEvento;
-	private String localEvento;
-	private Integer vagasTotaisEvento;
-	private Integer vagasDisponiveisEvento;
-	private BigDecimal precoEvento;
-	private Integer idStatus;
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long idEvento;
+
+    @Column(name = "nome_evento", nullable = false, length = 100)
+    private String nomeEvento;
+
+    @Column(name = "descricao_evento", columnDefinition = "TEXT")
+    private String descricaoEvento;
+
+    @Column(name = "data_evento", nullable = false)
+    private LocalDate dataEvento;
+
+    @Column(name = "local_evento", length = 200)
+    private String localEvento;
+
+    @Column(name = "vagas_totais_evento", nullable = false)
+    private Integer vagasTotaisEvento;
+
+    @Column(name = "vagas_disponiveis_evento", nullable = false)
+    private Integer vagasDisponiveisEvento;
+
+    @Column(name = "preco_evento", nullable = false, precision = 10, scale = 2)
+    private BigDecimal precoEvento;
+
+    @Enumerated(EnumType.STRING) 
+    @Column(name = "status_evento", nullable = false)
+    private StatusGeral statusGeral;
 	
 	public Evento() {
 		
 	}
-	
-	public Evento(DadosCadastroEvento dados) {
-		this.nomeEvento = dados.nomeEvento();
-		this.descricaoEvento = dados.descricaoEvento();
-		this.dataEvento = dados.dataEvento();
-		this.localEvento = dados.localEvento();
-		this.vagasTotaisEvento = dados.vagasTotaisEvento();
-		this.vagasDisponiveisEvento = dados.vagasDisponiveisEvento();
-		this.precoEvento = dados.precoEvento();
-		this.idStatus = 1;
-	}
 
-	public Integer getIdEvento() {
+	public Long getIdEvento() {
 		return idEvento;
 	}
-	public void setIdEvento(Integer idEvento) {
+	public void setIdEvento(Long idEvento) {
 		this.idEvento = idEvento;
 	}
 	public String getNomeEvento() {
@@ -94,18 +101,30 @@ public class Evento {
 	public void setPrecoEvento(BigDecimal precoEvento) {
 		this.precoEvento = precoEvento;
 	}
-	public Integer getIdStatus() {
-		return idStatus;
+	public StatusGeral getStatusGeral() {
+		return statusGeral;
 	}
-	public void setIdStatus(Integer idStatus) {
-		this.idStatus = idStatus;
+	public void setStatusGeral(StatusGeral statusGeral) {
+		this.statusGeral= statusGeral;
 	}
-	public void inativar() {
-		this.idStatus = 2;
+
+	@Override
+	public int hashCode() {
+		return Objects.hash(idEvento);
 	}
-	public void reativar() {
-		this.idStatus = 1;
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		Evento other = (Evento) obj;
+		return Objects.equals(idEvento, other.idEvento);
 	}
+
 	public void atualizarInformações(@Valid DadosAtualizarEvento dados) {
 		if (dados.dataEvento() != null) {
 			this.dataEvento = dados.dataEvento();
