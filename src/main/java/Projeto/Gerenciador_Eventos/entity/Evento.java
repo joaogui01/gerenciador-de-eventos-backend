@@ -3,12 +3,14 @@ package Projeto.Gerenciador_Eventos.entity;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
+import Projeto.Gerenciador_Eventos.dto.DadosAtualizarEvento;
 import Projeto.Gerenciador_Eventos.dto.DadosCadastroEvento;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import jakarta.validation.Valid;
 import lombok.EqualsAndHashCode;
 
 @Entity
@@ -103,5 +105,28 @@ public class Evento {
 	}
 	public void reativar() {
 		this.idStatus = 1;
+	}
+	public void atualizarInformações(@Valid DadosAtualizarEvento dados) {
+		if (dados.dataEvento() != null) {
+			this.dataEvento = dados.dataEvento();
+		}
+		if (dados.descricaoEvento() != null) {
+			this.descricaoEvento = dados.descricaoEvento();
+		}
+		if (dados.localEvento() != null) {
+			this.localEvento = dados.localEvento();
+		}
+		if (dados.nomeEvento() != null) {
+			this.nomeEvento = dados.nomeEvento();
+		}
+		if (dados.precoEvento() != null) {
+			this.precoEvento = dados.precoEvento();
+		}
+		if (dados.vagasDisponiveisEvento() != null) {
+			this.vagasDisponiveisEvento = dados.vagasDisponiveisEvento();
+		}
+		if (dados.vagasTotaisEvento() != null) {
+			this.vagasTotaisEvento = dados.vagasTotaisEvento();
+		}
 	}
 }
