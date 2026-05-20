@@ -6,6 +6,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 import Projeto.Gerenciador_Eventos.entity.Inscricao;
 
-public interface InscricaoRepository extends JpaRepository<Inscricao, Integer> {
+public interface InscricaoRepository extends JpaRepository<Inscricao, Long> {
 	List<Inscricao> findAllByIdStatus(Integer idStatus);
 }

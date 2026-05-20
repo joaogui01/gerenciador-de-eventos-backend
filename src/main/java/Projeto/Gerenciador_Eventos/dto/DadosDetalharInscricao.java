@@ -1,0 +1,23 @@
+package Projeto.Gerenciador_Eventos.dto;
+
+import java.time.LocalDateTime;
+
+import Projeto.Gerenciador_Eventos.entity.Inscricao;
+
+
+public record DadosDetalharInscricao(
+		
+		Long idInscricao,
+		Long idEvento,
+		Long idParticipante,
+		LocalDateTime dataInscricao) {
+
+	public DadosDetalharInscricao(Inscricao inscricao) {
+		this(
+				inscricao.getIdInscricao(), 
+				inscricao.getEvento().getIdEvento(), 
+				inscricao.getParticipante().getIdParticipante(), 
+				inscricao.getDataInscricao()
+		);
+	}
+}
