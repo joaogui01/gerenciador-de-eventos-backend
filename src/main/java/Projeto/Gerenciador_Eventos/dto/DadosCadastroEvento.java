@@ -28,9 +28,6 @@ public record DadosCadastroEvento(
 		Integer vagasDisponiveisEvento,
 		
 		@Positive
-		BigDecimal precoEvento,
-		
-		@NotNull
-		Integer idStatus) {
+		BigDecimal precoEvento) {
 
 }

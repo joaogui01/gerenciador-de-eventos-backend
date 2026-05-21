@@ -23,7 +23,7 @@ public class EventoController {
 	
 	@PostMapping("/cadastrar")
 	public ResponseEntity<DadosDetalharEvento> cadastrarEvento(@RequestBody @Valid DadosCadastroEvento dados, UriComponentsBuilder uriBuilder) {
-	DadosDetalharEvento detalharDTO = eventoService.cadastrarEvento(dados);
+		DadosDetalharEvento detalharDTO = eventoService.cadastrarEvento(dados);
 		
 		var uri = uriBuilder.path("/evento/detalhar/{id}").buildAndExpand(detalharDTO.idEvento()).toUri();
 		

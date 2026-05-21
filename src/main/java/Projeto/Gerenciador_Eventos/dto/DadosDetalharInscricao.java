@@ -1,7 +1,6 @@
 package Projeto.Gerenciador_Eventos.dto;
 
-import java.time.LocalDateTime;
-
+import java.time.LocalDate;
 import Projeto.Gerenciador_Eventos.entity.Inscricao;
 
 
@@ -10,7 +9,7 @@ public record DadosDetalharInscricao(
 		Long idInscricao,
 		Long idEvento,
 		Long idParticipante,
-		LocalDateTime dataInscricao) {
+		LocalDate dataInscricao) {
 
 	public DadosDetalharInscricao(Inscricao inscricao) {
 		this(

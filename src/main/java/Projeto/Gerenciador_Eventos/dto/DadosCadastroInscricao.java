@@ -8,10 +8,10 @@ import jakarta.validation.constraints.PastOrPresent;
 public record DadosCadastroInscricao(
 		
 		@NotNull
-		Integer idEvento,
+		Long idEvento,
 		
 		@NotNull
-		Integer idParticipante,
+		Long idParticipante,
 		
 		@PastOrPresent
 		LocalDate dataInscricao) {

@@ -1,7 +1,8 @@
 package Projeto.Gerenciador_Eventos.entity;
 
 import jakarta.persistence.*;
-import java.time.LocalDateTime;
+
+import java.time.LocalDate;
 import java.util.Objects;
 
 import Projeto.Gerenciador_Eventos.entity.enums.StatusGeral;
@@ -23,7 +24,7 @@ public class Inscricao {
     private Participante participante;
 
     @Column(name = "data_inscricao", nullable = false)
-    private LocalDateTime dataInscricao;
+    private LocalDate dataInscricao;
 
     @Enumerated(EnumType.STRING) 
     @Column(name = "status_inscricao", nullable = false)
@@ -50,10 +51,10 @@ public class Inscricao {
     public void setParticipante(Participante participante) {
         this.participante = participante;
     }
-    public LocalDateTime getDataInscricao() {
+    public LocalDate getDataInscricao() {
         return dataInscricao;
     }
-    public void setDataInscricao(LocalDateTime dataInscricao) {
+    public void setDataInscricao(LocalDate dataInscricao) {
         this.dataInscricao = dataInscricao;
     }
 	public StatusGeral getStatusGeral() {
