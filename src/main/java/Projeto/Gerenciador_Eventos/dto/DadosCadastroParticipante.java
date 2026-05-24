@@ -1,7 +1,6 @@
 package Projeto.Gerenciador_Eventos.dto;
 
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 
 public record DadosCadastroParticipante(	
 		@NotBlank
@@ -14,9 +13,6 @@ public record DadosCadastroParticipante(
 		String cpfParticipante,
 		
 		@NotBlank
-		String telefoneParticipante,
-		
-		@NotNull
-		Integer idStatus) {
+		String telefoneParticipante) {
 
 }
