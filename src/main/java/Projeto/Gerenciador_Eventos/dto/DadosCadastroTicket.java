@@ -7,7 +7,7 @@ import jakarta.validation.constraints.NotNull;
 public record DadosCadastroTicket(
 		
 		@NotNull
-		Integer idInscricao,
+		Long idInscricao,
 		
 		@NotBlank
 		String codigoHashTicket) {
