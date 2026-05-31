@@ -8,7 +8,7 @@ import jakarta.validation.constraints.NotNull;
 public record DadosAtualizarEvento(	
 		
 		@NotNull
-		Integer idEvento,
+		Long idEvento,
 
 		String nomeEvento,
 		String descricaoEvento,

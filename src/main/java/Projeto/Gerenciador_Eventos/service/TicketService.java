@@ -1,6 +1,7 @@
 package Projeto.Gerenciador_Eventos.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import Projeto.Gerenciador_Eventos.dto.DadosCadastroTicket;
 import Projeto.Gerenciador_Eventos.dto.DadosDetalharTicket;
@@ -11,6 +12,7 @@ import Projeto.Gerenciador_Eventos.repository.InscricaoRepository;
 import Projeto.Gerenciador_Eventos.repository.TicketRepository;
 import jakarta.transaction.Transactional;
 
+@Service
 public class TicketService {
 	
 	@Autowired
