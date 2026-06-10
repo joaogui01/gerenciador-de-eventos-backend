@@ -34,5 +34,21 @@ public class EventoService {
 		
 		return new DadosDetalharEvento(evento);
 	}
+	
+	@Transactional
+	public DadosDetalharEvento ativarEvento(Long id) {
+		Evento evento = eventoRepository.getReferenceById(id);
+		evento.setStatusGeral(StatusGeral.ATIVO);
+		
+		return new DadosDetalharEvento(evento);
+	}
+	
+	@Transactional
+	public DadosDetalharEvento inativarEvento(Long id) {
+		Evento evento = eventoRepository.getReferenceById(id);
+		evento.setStatusGeral(StatusGeral.INATIVO);
+		
+		return new DadosDetalharEvento(evento);
+	}
 
 }
