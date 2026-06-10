@@ -43,4 +43,20 @@ public class InscricaoService {
 		
 		return new DadosDetalharInscricao(inscricao);
 	}
+	
+	@Transactional
+	public DadosDetalharInscricao ativarInscricao(Long id) {
+		Inscricao inscricao = inscricaoRepository.getReferenceById(id);
+		inscricao.setStatusGeral(StatusGeral.ATIVO);
+		
+		return new DadosDetalharInscricao(inscricao);
+	}
+	
+	@Transactional
+	public DadosDetalharInscricao inativarInscricao(Long id) {
+		Inscricao inscricao = inscricaoRepository.getReferenceById(id);
+		inscricao.setStatusGeral(StatusGeral.INATIVO);
+		
+		return new DadosDetalharInscricao(inscricao);
+	}
 }
