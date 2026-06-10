@@ -2,7 +2,10 @@ package Projeto.Gerenciador_Eventos.controllers;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -25,6 +28,26 @@ public class ParticipanteController {
 	@Transactional
 	public ResponseEntity<DadosDetalharParticipante> cadastrarParticipante (@RequestBody @Valid DadosCadastroParticipante dados, UriComponentsBuilder uriBuilder) {
 		DadosDetalharParticipante detalharDTO = participanteService.cadastrarParticipante(dados);
+		
+		var uri = uriBuilder.path("/participante/detalhar/{id}").buildAndExpand(detalharDTO.idParticipante()).toUri();
+		
+		return ResponseEntity.created(uri).body(detalharDTO);
+	}
+	
+	@DeleteMapping("/inativar/{id}")
+	@Transactional
+	public ResponseEntity<DadosDetalharParticipante> inativarParticipante(@PathVariable Long id, UriComponentsBuilder uriBuilder) {
+		DadosDetalharParticipante detalharDTO = participanteService.inativarParticipante(id);
+		
+		var uri = uriBuilder.path("/participante/detalhar/{id}").buildAndExpand(detalharDTO.idParticipante()).toUri();
+		
+		return ResponseEntity.created(uri).body(detalharDTO);
+	}
+	
+	@PutMapping("/reativar/{id}")
+	@Transactional
+	public ResponseEntity<DadosDetalharParticipante> ativarParticipante(@PathVariable Long id, UriComponentsBuilder uriBuilder) {
+		DadosDetalharParticipante detalharDTO = participanteService.ativarParticipante(id);
 		
 		var uri = uriBuilder.path("/participante/detalhar/{id}").buildAndExpand(detalharDTO.idParticipante()).toUri();
 		

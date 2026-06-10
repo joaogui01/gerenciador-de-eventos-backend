@@ -29,4 +29,20 @@ public class ParticipanteService {
 		
 		return new DadosDetalharParticipante(participante);
 	}
+	
+	@Transactional
+	public DadosDetalharParticipante ativarParticipante(Long id) {
+		Participante participante = participanteRepository.getReferenceById(id);
+		participante.setStatusGeral(StatusGeral.ATIVO);
+		
+		return new DadosDetalharParticipante(participante);
+	}
+	
+	@Transactional
+	public DadosDetalharParticipante inativarParticipante(Long id) {
+		Participante participante = participanteRepository.getReferenceById(id);
+		participante.setStatusGeral(StatusGeral.INATIVO);
+		
+		return new DadosDetalharParticipante(participante);
+	}
 }
