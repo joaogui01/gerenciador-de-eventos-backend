@@ -50,5 +50,4 @@ public class EventoService {
 		
 		return new DadosDetalharEvento(evento);
 	}
-
 }

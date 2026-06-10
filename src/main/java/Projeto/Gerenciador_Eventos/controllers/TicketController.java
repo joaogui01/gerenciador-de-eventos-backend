@@ -2,7 +2,10 @@ package Projeto.Gerenciador_Eventos.controllers;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -27,6 +30,26 @@ public class TicketController {
 		DadosDetalharTicket detalharDTO = ticketService.cadastrarTicket(dados);
 		
 		var uri = uriBuilder.path("/ticket/cadastrar/{id}").buildAndExpand(detalharDTO.idTicket()).toUri();
+		
+		return ResponseEntity.created(uri).body(detalharDTO);
+	}
+	
+	@DeleteMapping("/inativar/{id}")
+	@Transactional
+	public ResponseEntity<DadosDetalharTicket> inativarTicket(@PathVariable Long id, UriComponentsBuilder uriBuilder) {
+		DadosDetalharTicket detalharDTO = ticketService.inativarTicket(id);
+		
+		var uri = uriBuilder.path("/ticket/detalhar/{id}").buildAndExpand(detalharDTO.idTicket()).toUri();
+		
+		return ResponseEntity.created(uri).body(detalharDTO);
+	}
+	
+	@PutMapping("/reativar/{id}")
+	@Transactional
+	public ResponseEntity<DadosDetalharTicket> ativarTicket(@PathVariable Long id, UriComponentsBuilder uriBuilder) {
+		DadosDetalharTicket detalharDTO = ticketService.ativarTicket(id);
+		
+		var uri = uriBuilder.path("/ticket/detalhar/{id}").buildAndExpand(detalharDTO.idTicket()).toUri();
 		
 		return ResponseEntity.created(uri).body(detalharDTO);
 	}
