@@ -35,4 +35,12 @@ public class CheckInService {
 		
 		return new DadosDetalharCheckIn(checkIn);
 	}
+	
+	@Transactional
+	public DadosDetalharCheckIn realizarCheckIn(Long id) {
+		CheckIn checkIn = checkInRepository.getReferenceById(id);
+		checkIn.setStatusCheckIn(StatusCheckIn.REALIZADO);;
+		
+		return new DadosDetalharCheckIn(checkIn);
+	}
 }
