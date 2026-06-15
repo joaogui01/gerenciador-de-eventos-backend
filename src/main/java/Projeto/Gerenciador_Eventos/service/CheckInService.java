@@ -1,11 +1,16 @@
 package Projeto.Gerenciador_Eventos.service;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import Projeto.Gerenciador_Eventos.dto.DadosCadastroCheckIn;
 import Projeto.Gerenciador_Eventos.dto.DadosDetalharCheckIn;
+import Projeto.Gerenciador_Eventos.dto.DadosDetalharEvento;
 import Projeto.Gerenciador_Eventos.entity.CheckIn;
+import Projeto.Gerenciador_Eventos.entity.Evento;
 import Projeto.Gerenciador_Eventos.entity.Ticket;
 import Projeto.Gerenciador_Eventos.entity.enums.StatusCheckIn;
 import Projeto.Gerenciador_Eventos.repository.CheckInRepository;
@@ -42,5 +47,16 @@ public class CheckInService {
 		checkIn.setStatusCheckIn(StatusCheckIn.REALIZADO);;
 		
 		return new DadosDetalharCheckIn(checkIn);
+	}
+	
+	public List<DadosDetalharCheckIn> listarCheckIns() {
+		List<CheckIn> checkins = checkInRepository.findAll();
+		List<DadosDetalharCheckIn> detalharDTOs = new ArrayList<>();
+		
+		for (CheckIn checkin : checkins) {
+			detalharDTOs.add(new DadosDetalharCheckIn(checkin));
+		}
+		
+		return detalharDTOs;
 	}
 }
