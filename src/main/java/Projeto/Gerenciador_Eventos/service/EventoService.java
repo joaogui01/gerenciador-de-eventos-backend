@@ -1,6 +1,9 @@
 package Projeto.Gerenciador_Eventos.service;
 
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 
 import org.springframework.stereotype.Service;
@@ -49,5 +52,16 @@ public class EventoService {
 		evento.setStatusGeral(StatusGeral.INATIVO);
 		
 		return new DadosDetalharEvento(evento);
+	}
+	
+	public List<DadosDetalharEvento> listarEventos() {
+		List<Evento> eventos = eventoRepository.findAll();
+		List<DadosDetalharEvento> detalharDTOs = new ArrayList<>();
+		
+		for (Evento evento : eventos) {
+			detalharDTOs.add(new DadosDetalharEvento(evento));
+		}
+		
+		return detalharDTOs;
 	}
 }

@@ -1,8 +1,11 @@
 package Projeto.Gerenciador_Eventos.controllers;
 
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -51,5 +54,12 @@ public class EventoController {
 		var uri = uriBuilder.path("/evento/detalhar/{id}").buildAndExpand(detalharDTO.idEvento()).toUri();
 		
 		return ResponseEntity.created(uri).body(detalharDTO);
+	}
+	
+	@GetMapping("/listar")
+	public ResponseEntity<List<DadosDetalharEvento>> listarEventos() {
+	    List<DadosDetalharEvento> detalharDTO = eventoService.listarEventos();
+	    
+	    return ResponseEntity.ok(detalharDTO);
 	}
 }
