@@ -1,5 +1,8 @@
 package Projeto.Gerenciador_Eventos.service;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -58,5 +61,16 @@ public class InscricaoService {
 		inscricao.setStatusGeral(StatusGeral.INATIVO);
 		
 		return new DadosDetalharInscricao(inscricao);
+	}
+	
+	public List<DadosDetalharInscricao> listarInscricoes() {
+		List<Inscricao> inscricoes = inscricaoRepository.findAll();
+		List<DadosDetalharInscricao> detalharDTOs = new ArrayList<>();
+		
+		for (Inscricao inscricao : inscricoes) {
+			detalharDTOs.add(new DadosDetalharInscricao(inscricao));
+		}
+		
+		return detalharDTOs;
 	}
 }
