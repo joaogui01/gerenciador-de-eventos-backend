@@ -8,9 +8,7 @@ import org.springframework.stereotype.Service;
 
 import Projeto.Gerenciador_Eventos.dto.DadosCadastroCheckIn;
 import Projeto.Gerenciador_Eventos.dto.DadosDetalharCheckIn;
-import Projeto.Gerenciador_Eventos.dto.DadosDetalharEvento;
 import Projeto.Gerenciador_Eventos.entity.CheckIn;
-import Projeto.Gerenciador_Eventos.entity.Evento;
 import Projeto.Gerenciador_Eventos.entity.Ticket;
 import Projeto.Gerenciador_Eventos.entity.enums.StatusCheckIn;
 import Projeto.Gerenciador_Eventos.repository.CheckInRepository;

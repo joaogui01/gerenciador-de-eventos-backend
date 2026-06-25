@@ -16,6 +16,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import Projeto.Gerenciador_Eventos.dto.DadosCadastroParticipante;
 import Projeto.Gerenciador_Eventos.dto.DadosDetalharParticipante;
+import Projeto.Gerenciador_Eventos.dto.DadosListarParticipante;
 import Projeto.Gerenciador_Eventos.service.ParticipanteService;
 import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
@@ -60,6 +61,13 @@ public class ParticipanteController {
 	@GetMapping("/listar")
 	public ResponseEntity<List<DadosDetalharParticipante>> listarParticipantes() {
 	    List<DadosDetalharParticipante> detalharDTO = participanteService.listarParticipantes();
+	    
+	    return ResponseEntity.ok(detalharDTO);
+	}
+	
+	@GetMapping("/listar/filtro")
+	public ResponseEntity<List<DadosDetalharParticipante>> listarParticipantesComParametros(DadosListarParticipante parametro) {
+	    List<DadosDetalharParticipante> detalharDTO = participanteService.listarParticipantesComParametros(parametro);
 	    
 	    return ResponseEntity.ok(detalharDTO);
 	}
