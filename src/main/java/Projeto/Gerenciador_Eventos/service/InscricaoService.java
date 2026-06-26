@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 
 import Projeto.Gerenciador_Eventos.dto.DadosCadastroInscricao;
 import Projeto.Gerenciador_Eventos.dto.DadosDetalharInscricao;
+import Projeto.Gerenciador_Eventos.dto.DadosListarInscricao;
 import Projeto.Gerenciador_Eventos.entity.Evento;
 import Projeto.Gerenciador_Eventos.entity.Inscricao;
 import Projeto.Gerenciador_Eventos.entity.Participante;
@@ -65,6 +66,28 @@ public class InscricaoService {
 	
 	public List<DadosDetalharInscricao> listarInscricoes() {
 		List<Inscricao> inscricoes = inscricaoRepository.findAll();
+		List<DadosDetalharInscricao> detalharDTOs = new ArrayList<>();
+		
+		for (Inscricao inscricao : inscricoes) {
+			detalharDTOs.add(new DadosDetalharInscricao(inscricao));
+		}
+		
+		return detalharDTOs;
+	}
+	
+	public List<DadosDetalharInscricao> listarInscricoesComParametros(DadosListarInscricao parametros) {
+		Evento evento = (parametros.idEvento() != null) ? 
+	            eventoRepository.getReferenceById(parametros.idEvento()) : null;
+	            
+	    Participante participante = (parametros.idParticipante() != null) ? 
+	            participanteRepository.getReferenceById(parametros.idParticipante()) : null;
+	    
+		List<Inscricao> inscricoes = inscricaoRepository.buscarComFiltrosDinamicos(
+				evento, 
+				participante, 
+				parametros.dataInscricao(), 
+				parametros.statusGeral());
+		
 		List<DadosDetalharInscricao> detalharDTOs = new ArrayList<>();
 		
 		for (Inscricao inscricao : inscricoes) {

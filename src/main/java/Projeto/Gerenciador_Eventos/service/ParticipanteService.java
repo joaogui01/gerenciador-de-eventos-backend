@@ -5,8 +5,6 @@ import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.RequestBody;
-
 import Projeto.Gerenciador_Eventos.dto.DadosCadastroParticipante;
 import Projeto.Gerenciador_Eventos.dto.DadosDetalharParticipante;
 import Projeto.Gerenciador_Eventos.dto.DadosListarParticipante;
@@ -14,7 +12,6 @@ import Projeto.Gerenciador_Eventos.entity.Participante;
 import Projeto.Gerenciador_Eventos.entity.enums.StatusGeral;
 import Projeto.Gerenciador_Eventos.repository.ParticipanteRepository;
 import jakarta.transaction.Transactional;
-import jakarta.validation.Valid;
 
 @Service
 public class ParticipanteService {
@@ -63,13 +60,13 @@ public class ParticipanteService {
 		return detalharDTOs;
 	}
 	
-	public List<DadosDetalharParticipante> listarParticipantesComParametros(@RequestBody @Valid DadosListarParticipante parametro) {
+	public List<DadosDetalharParticipante> listarParticipantesComParametros(DadosListarParticipante parametros) {
 		List<Participante> participantes = participanteRepository.buscarComFiltrosDinamicos(
-				parametro.nomeParticipante(), 
-				parametro.emailParticipante(), 
-				parametro.cpfParticipante(), 
-				parametro.telefoneParticipante(), 
-				parametro.statusGeral());
+				parametros.nomeParticipante(), 
+				parametros.emailParticipante(), 
+				parametros.cpfParticipante(), 
+				parametros.telefoneParticipante(), 
+				parametros.statusGeral());
 		
 		List<DadosDetalharParticipante> detalharDTOs = new ArrayList<>();
 		

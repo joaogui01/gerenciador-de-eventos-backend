@@ -16,6 +16,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import Projeto.Gerenciador_Eventos.dto.DadosCadastroInscricao;
 import Projeto.Gerenciador_Eventos.dto.DadosDetalharInscricao;
+import Projeto.Gerenciador_Eventos.dto.DadosListarInscricao;
 import Projeto.Gerenciador_Eventos.service.InscricaoService;
 import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
@@ -60,6 +61,13 @@ public class InscricaoController {
 	@GetMapping("/listar")
 	public ResponseEntity<List<DadosDetalharInscricao>> listarInscricoes() {
 	    List<DadosDetalharInscricao> detalharDTO = inscricaoService.listarInscricoes();
+	    
+	    return ResponseEntity.ok(detalharDTO);
+	}
+	
+	@GetMapping("/listar/filtro")
+	public ResponseEntity<List<DadosDetalharInscricao>> listarInscricoesComParametros(@RequestBody @Valid DadosListarInscricao parametros) {
+	    List<DadosDetalharInscricao> detalharDTO = inscricaoService.listarInscricoesComParametros(parametros);
 	    
 	    return ResponseEntity.ok(detalharDTO);
 	}
