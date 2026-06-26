@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 
 import Projeto.Gerenciador_Eventos.dto.DadosCadastroEvento;
 import Projeto.Gerenciador_Eventos.dto.DadosDetalharEvento;
+import Projeto.Gerenciador_Eventos.dto.DadosListarEvento;
 import Projeto.Gerenciador_Eventos.entity.Evento;
 import Projeto.Gerenciador_Eventos.entity.enums.StatusGeral;
 import Projeto.Gerenciador_Eventos.repository.EventoRepository;
@@ -56,6 +57,26 @@ public class EventoService {
 	
 	public List<DadosDetalharEvento> listarEventos() {
 		List<Evento> eventos = eventoRepository.findAll();
+		List<DadosDetalharEvento> detalharDTOs = new ArrayList<>();
+		
+		for (Evento evento : eventos) {
+			detalharDTOs.add(new DadosDetalharEvento(evento));
+		}
+		
+		return detalharDTOs;
+	}
+	
+	public List<DadosDetalharEvento> listarEventosComParametros(DadosListarEvento parametros) {
+		List<Evento> eventos = eventoRepository.buscarComFiltrosDinamicos(
+				parametros.nomeEvento(), 
+				parametros.descricaoEvento(), 
+				parametros.dataEvento(), 
+				parametros.localEvento(), 
+				parametros.vagasTotaisEvento(), 
+				parametros.vagasDisponiveisEvento(), 
+				parametros.precoEvento(), 
+				parametros.statusGeral());
+		
 		List<DadosDetalharEvento> detalharDTOs = new ArrayList<>();
 		
 		for (Evento evento : eventos) {

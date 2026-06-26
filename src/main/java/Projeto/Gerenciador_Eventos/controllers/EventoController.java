@@ -16,6 +16,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import Projeto.Gerenciador_Eventos.dto.DadosCadastroEvento;
 import Projeto.Gerenciador_Eventos.dto.DadosDetalharEvento;
+import Projeto.Gerenciador_Eventos.dto.DadosListarEvento;
 import Projeto.Gerenciador_Eventos.service.EventoService;
 import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
@@ -59,6 +60,13 @@ public class EventoController {
 	@GetMapping("/listar")
 	public ResponseEntity<List<DadosDetalharEvento>> listarEventos() {
 	    List<DadosDetalharEvento> detalharDTO = eventoService.listarEventos();
+	    
+	    return ResponseEntity.ok(detalharDTO);
+	}
+	
+	@GetMapping("/listar/filtro")
+	public ResponseEntity<List<DadosDetalharEvento>> listarEventosComParametros(@RequestBody @Valid DadosListarEvento parametros) {
+	    List<DadosDetalharEvento> detalharDTO = eventoService.listarEventosComParametros(parametros);
 	    
 	    return ResponseEntity.ok(detalharDTO);
 	}
