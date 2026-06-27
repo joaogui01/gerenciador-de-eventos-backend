@@ -66,7 +66,7 @@ public class InscricaoController {
 	}
 	
 	@GetMapping("/listar/filtro")
-	public ResponseEntity<List<DadosDetalharInscricao>> listarInscricoesComParametros(@RequestBody @Valid DadosListarInscricao parametros) {
+	public ResponseEntity<List<DadosDetalharInscricao>> listarInscricoesComParametros(@Valid DadosListarInscricao parametros) {
 	    List<DadosDetalharInscricao> detalharDTO = inscricaoService.listarInscricoesComParametros(parametros);
 	    
 	    return ResponseEntity.ok(detalharDTO);

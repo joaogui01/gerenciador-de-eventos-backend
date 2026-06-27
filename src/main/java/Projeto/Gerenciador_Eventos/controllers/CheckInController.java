@@ -15,6 +15,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import Projeto.Gerenciador_Eventos.dto.DadosCadastroCheckIn;
 import Projeto.Gerenciador_Eventos.dto.DadosDetalharCheckIn;
+import Projeto.Gerenciador_Eventos.dto.DadosListarCheckIn;
 import Projeto.Gerenciador_Eventos.service.CheckInService;
 import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
@@ -49,6 +50,13 @@ public class CheckInController {
 	@GetMapping("/listar")
 	public ResponseEntity<List<DadosDetalharCheckIn>> listarCheckIns() {
 	    List<DadosDetalharCheckIn> detalharDTO = checkInService.listarCheckIns();
+	    
+	    return ResponseEntity.ok(detalharDTO);
+	}
+	
+	@GetMapping("/listar/filtro")
+	public ResponseEntity<List<DadosDetalharCheckIn>> listarCheckInsComParametros(@Valid DadosListarCheckIn parametros) {
+	    List<DadosDetalharCheckIn> detalharDTO = checkInService.listarCheckInsComParametros(parametros);
 	    
 	    return ResponseEntity.ok(detalharDTO);
 	}

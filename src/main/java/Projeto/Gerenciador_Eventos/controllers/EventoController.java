@@ -65,7 +65,7 @@ public class EventoController {
 	}
 	
 	@GetMapping("/listar/filtro")
-	public ResponseEntity<List<DadosDetalharEvento>> listarEventosComParametros(@RequestBody @Valid DadosListarEvento parametros) {
+	public ResponseEntity<List<DadosDetalharEvento>> listarEventosComParametros(@Valid DadosListarEvento parametros) {
 	    List<DadosDetalharEvento> detalharDTO = eventoService.listarEventosComParametros(parametros);
 	    
 	    return ResponseEntity.ok(detalharDTO);

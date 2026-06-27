@@ -66,7 +66,7 @@ public class TicketController {
 	}
 	
 	@GetMapping("/listar/filtro")
-	public ResponseEntity<List<DadosDetalharTicket>> listarTicketsComParametros(@RequestBody @Valid DadosListarTicket parametros) {
+	public ResponseEntity<List<DadosDetalharTicket>> listarTicketsComParametros(@Valid DadosListarTicket parametros) {
 	    List<DadosDetalharTicket> detalharDTO = ticketService.listarTicketsComParametros(parametros);
 	    
 	    return ResponseEntity.ok(detalharDTO);

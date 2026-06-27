@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 
 import Projeto.Gerenciador_Eventos.dto.DadosCadastroCheckIn;
 import Projeto.Gerenciador_Eventos.dto.DadosDetalharCheckIn;
+import Projeto.Gerenciador_Eventos.dto.DadosListarCheckIn;
 import Projeto.Gerenciador_Eventos.entity.CheckIn;
 import Projeto.Gerenciador_Eventos.entity.Ticket;
 import Projeto.Gerenciador_Eventos.entity.enums.StatusCheckIn;
@@ -49,6 +50,24 @@ public class CheckInService {
 	
 	public List<DadosDetalharCheckIn> listarCheckIns() {
 		List<CheckIn> checkins = checkInRepository.findAll();
+		List<DadosDetalharCheckIn> detalharDTOs = new ArrayList<>();
+		
+		for (CheckIn checkin : checkins) {
+			detalharDTOs.add(new DadosDetalharCheckIn(checkin));
+		}
+		
+		return detalharDTOs;
+	}
+	
+	public List<DadosDetalharCheckIn> listarCheckInsComParametros(DadosListarCheckIn parametros) {
+		Ticket ticket = (parametros.idTicket() != null) ? 
+	            ticketRepository.getReferenceById(parametros.idTicket()) : null;
+		
+		List<CheckIn> checkins = checkInRepository.buscarComFiltrosDinamicos(
+				ticket, 
+				parametros.dataCheckIn(), 
+				parametros.statusCheckIn());
+		
 		List<DadosDetalharCheckIn> detalharDTOs = new ArrayList<>();
 		
 		for (CheckIn checkin : checkins) {

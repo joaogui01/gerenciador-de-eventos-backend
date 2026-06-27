@@ -66,7 +66,7 @@ public class ParticipanteController {
 	}
 	
 	@GetMapping("/listar/filtro")
-	public ResponseEntity<List<DadosDetalharParticipante>> listarParticipantesComParametros(@RequestBody @Valid DadosListarParticipante parametros) {
+	public ResponseEntity<List<DadosDetalharParticipante>> listarParticipantesComParametros(@Valid DadosListarParticipante parametros) {
 	    List<DadosDetalharParticipante> detalharDTO = participanteService.listarParticipantesComParametros(parametros);
 	    
 	    return ResponseEntity.ok(detalharDTO);
