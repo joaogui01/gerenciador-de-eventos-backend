@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 
 import Projeto.Gerenciador_Eventos.dto.DadosCadastroTicket;
 import Projeto.Gerenciador_Eventos.dto.DadosDetalharTicket;
+import Projeto.Gerenciador_Eventos.dto.DadosListarTicket;
 import Projeto.Gerenciador_Eventos.entity.Inscricao;
 import Projeto.Gerenciador_Eventos.entity.Ticket;
 import Projeto.Gerenciador_Eventos.entity.enums.StatusGeral;
@@ -57,6 +58,24 @@ public class TicketService {
 	
 	public List<DadosDetalharTicket> listarTickets() {
 		List<Ticket> tickets = ticketRepository.findAll();
+		List<DadosDetalharTicket> detalharDTOs = new ArrayList<>();
+		
+		for (Ticket ticket : tickets) {
+			detalharDTOs.add(new DadosDetalharTicket(ticket));
+		}
+		
+		return detalharDTOs;
+	}
+	
+	public List<DadosDetalharTicket> listarTicketsComParametros(DadosListarTicket parametros) {
+		Inscricao inscricao = (parametros.idInscricao() != null) ? 
+	            inscricaoRepository.getReferenceById(parametros.idInscricao()) : null;
+		
+		List<Ticket> tickets = ticketRepository.buscarComFiltrosDinamicos(
+				inscricao, 
+				parametros.codigoHashTicket(), 
+				parametros.statusGeral());
+		
 		List<DadosDetalharTicket> detalharDTOs = new ArrayList<>();
 		
 		for (Ticket ticket : tickets) {
