@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -23,6 +24,11 @@ public class TratadorDeErros {
 	@ExceptionHandler(IllegalStateException.class)
 	public ResponseEntity<Object> tratarErroRegraDeNegocio(IllegalStateException ex) {
 		return ResponseEntity.badRequest().body(ex.getMessage());
+	}
+
+	@ExceptionHandler(BadCredentialsException.class)
+	public ResponseEntity<Object> tratarErroLogin() {
+		return ResponseEntity.badRequest().body("Login ou senha inválidos.");
 	}
 
 	@ExceptionHandler(MethodArgumentNotValidException.class)
