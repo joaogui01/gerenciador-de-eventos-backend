@@ -2,7 +2,7 @@
 
 API REST desenvolvida em **Java + Spring Boot** para gerenciamento de eventos, participantes, inscrições, tickets e check-ins.
 
-> ⚠️ **Projeto em desenvolvimento.** Banco de dados, endpoints de detalhamento e atualização de Evento já funcionam, mas ainda faltam pontos importantes — veja a seção [Status do projeto](#status-do-projeto).
+> ⚠️ **Projeto em desenvolvimento.** Banco de dados, endpoints de detalhamento/atualização, regras de negócio de vagas/inscrição e tratamento de erros já funcionam, mas ainda faltam pontos importantes — veja a seção [Status do projeto](#status-do-projeto).
 
 ## Sobre o projeto
 
@@ -33,9 +33,10 @@ Evento ───────┘
 ```
 src/main/java/Projeto/Gerenciador_Eventos/
 ├── controllers/     # Endpoints REST
-├── dto/              # Records de entrada/saída (cadastro, listagem, detalhamento)
+├── dto/              # Records de entrada/saída (cadastro, listagem, detalhamento, erro)
 ├── entity/            # Entidades JPA (Evento, Participante, Inscricao, Ticket, CheckIn)
 │   └── enums/          # StatusGeral, StatusCheckIn
+├── handler/           # Tratamento global de exceções (TratadorDeErros)
 ├── repository/       # Interfaces Spring Data JPA
 └── service/           # Regras de negócio
 ```
@@ -94,6 +95,14 @@ Cada recurso segue um padrão semelhante de CRUD parcial (cadastro, ativar/inati
 - `GET /checkin/listar`
 - `GET /checkin/listar/filtro`
 
+### Respostas de erro
+
+- `404 Not Found`: id informado não existe.
+- `400 Bad Request`: falha de validação (`@Valid`, retorna lista de `{campo, mensagem}`) ou violação de regra de negócio (retorna a mensagem do erro), como:
+  - criar inscrição sem vagas disponíveis no evento;
+  - criar inscrição duplicada (mesmo participante + mesmo evento, ambos ativos);
+  - emitir ticket para uma inscrição que não está `ATIVO`.
+
 ## Status do projeto
 
 Este projeto **ainda não está pronto para produção**. Progresso até agora:
@@ -102,9 +111,9 @@ Este projeto **ainda não está pronto para produção**. Progresso até agora:
 - [x] **Migrações Flyway**: primeira migração (`V1__criacao_tabelas.sql`) criando as tabelas `evento`, `participante`, `inscricao`, `ticket` e `checkin`, refletindo as entidades JPA.
 - [x] **Endpoints de detalhamento (`GET /.../detalhar/{id}`)**: implementados para os 5 recursos (Evento, Participante, Inscricao, Ticket, CheckIn), seguindo o mesmo padrão de `getReferenceById` já usado em `ativar`/`inativar`.
 - [x] **Atualização de Evento**: `PUT /evento/atualizar` implementado, usando `DadosAtualizarEvento` e o método `Evento.atualizarInformações(...)`. Atualização é parcial — só sobrescreve os campos enviados (diferentes de `null`) no corpo da requisição.
-- [ ] **Regras de negócio de vagas**: `vagasDisponiveisEvento` não é decrementado automaticamente ao criar uma inscrição.
-- [ ] **Validações cruzadas**: por exemplo, impedir inscrição duplicada do mesmo participante no mesmo evento, ou emissão de ticket para inscrição inativa.
-- [ ] **Tratamento de erros**: não há `@ControllerAdvice`/`ExceptionHandler` para respostas de erro padronizadas. Hoje, um `id` inexistente em `detalhar`/`ativar`/`inativar` retorna erro 500 em vez de 404, porque esses métodos usam `getReferenceById` (que só valida a existência do registro quando um campo é acessado).
+- [x] **Tratamento de erros**: `TratadorDeErros` (`@RestControllerAdvice`) implementado. `EntityNotFoundException` (id inexistente em `getReferenceById`) agora retorna `404`; `MethodArgumentNotValidException` (falha de `@Valid`) retorna `400` com a lista de campos inválidos; `IllegalStateException` (regras de negócio, ex: vagas esgotadas) retorna `400` com a mensagem do erro.
+- [x] **Regras de negócio de vagas**: `vagasDisponiveisEvento` é decrementado automaticamente ao criar uma inscrição, e a criação é bloqueada (`400`) se não houver vagas disponíveis.
+- [x] **Validações cruzadas**: bloqueada inscrição duplicada do mesmo participante ativo no mesmo evento, e bloqueada emissão de ticket para inscrição que não esteja `ATIVO`.
 - [ ] **Segurança/autenticação**: nenhuma dependência ou configuração de segurança foi adicionada até o momento.
 - [ ] **Testes automatizados**: apenas o teste padrão gerado pelo Spring Initializr (`GerenciadorEventosApplicationTests`) está presente.
 - [ ] **Documentação da API** (ex: Swagger/OpenAPI) ainda não configurada.
@@ -140,5 +149,5 @@ Pré-requisitos: JDK 17, Maven (ou usar o wrapper `./mvnw`) e uma instância MyS
 1. ~~Configurar o `application.properties` e escrever a primeira migração Flyway.~~ ✅
 2. ~~Implementar os endpoints de detalhamento (`GET /.../detalhar/{id}`) para cada recurso.~~ ✅
 3. ~~Implementar a atualização de Evento usando `DadosAtualizarEvento`.~~ ✅
-4. Adicionar tratamento global de exceções (ex: `@ControllerAdvice`), incluindo retorno de 404 quando um `id` não existir.
+4. ~~Adicionar tratamento global de exceções, incluindo retorno de 404 quando um `id` não existir.~~ ✅
 5. Escrever testes de integração para os principais fluxos (cadastro de evento → inscrição → ticket → check-in).
