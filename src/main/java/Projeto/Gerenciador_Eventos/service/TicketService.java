@@ -27,12 +27,15 @@ public class TicketService {
 	
 	@Transactional
 	public DadosDetalharTicket cadastrarTicket(DadosCadastroTicket dados) {
+		Inscricao inscricao = inscricaoRepository.getReferenceById(dados.idInscricao());
+		
+		if (inscricao.getStatusGeral() != StatusGeral.ATIVO) {
+			throw new IllegalStateException("Não é possível emitir ticket para uma inscrição inativa.");
+		}
+		
 		Ticket ticket = new Ticket();
 		ticket.setCodigoHashTicket(dados.codigoHashTicket());
-		
-		Inscricao inscricao = inscricaoRepository.getReferenceById(dados.idInscricao());
 		ticket.setInscricao(inscricao);
-		
 		ticket.setStatusGeral(StatusGeral.ATIVO);
 		
 		ticketRepository.save(ticket);
