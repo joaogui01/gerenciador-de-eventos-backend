@@ -64,6 +64,12 @@ public class InscricaoService {
 		return new DadosDetalharInscricao(inscricao);
 	}
 	
+	public DadosDetalharInscricao detalharInscricao(Long id) {
+		Inscricao inscricao = inscricaoRepository.getReferenceById(id);
+		
+		return new DadosDetalharInscricao(inscricao);
+	}
+	
 	public List<DadosDetalharInscricao> listarInscricoes() {
 		List<Inscricao> inscricoes = inscricaoRepository.findAll();
 		List<DadosDetalharInscricao> detalharDTOs = new ArrayList<>();
