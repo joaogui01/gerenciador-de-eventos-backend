@@ -56,6 +56,12 @@ public class TicketService {
 		return new DadosDetalharTicket(ticket);
 	}
 	
+	public DadosDetalharTicket detalharTicket(Long id) {
+		Ticket ticket = ticketRepository.getReferenceById(id);
+		
+		return new DadosDetalharTicket(ticket);
+	}
+	
 	public List<DadosDetalharTicket> listarTickets() {
 		List<Ticket> tickets = ticketRepository.findAll();
 		List<DadosDetalharTicket> detalharDTOs = new ArrayList<>();
