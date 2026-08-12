@@ -57,6 +57,13 @@ public class EventoController {
 		return ResponseEntity.created(uri).body(detalharDTO);
 	}
 	
+	@GetMapping("/detalhar/{id}")
+	public ResponseEntity<DadosDetalharEvento> detalharEvento(@PathVariable Long id) {
+		DadosDetalharEvento detalharDTO = eventoService.detalharEvento(id);
+		
+		return ResponseEntity.ok(detalharDTO);
+	}
+	
 	@GetMapping("/listar")
 	public ResponseEntity<List<DadosDetalharEvento>> listarEventos() {
 	    List<DadosDetalharEvento> detalharDTO = eventoService.listarEventos();
