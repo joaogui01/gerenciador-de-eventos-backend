@@ -58,6 +58,13 @@ public class InscricaoController {
 		return ResponseEntity.created(uri).body(detalharDTO);
 	}
 	
+	@GetMapping("/detalhar/{id}")
+	public ResponseEntity<DadosDetalharInscricao> detalharInscricao(@PathVariable Long id) {
+		DadosDetalharInscricao detalharDTO = inscricaoService.detalharInscricao(id);
+		
+		return ResponseEntity.ok(detalharDTO);
+	}
+	
 	@GetMapping("/listar")
 	public ResponseEntity<List<DadosDetalharInscricao>> listarInscricoes() {
 	    List<DadosDetalharInscricao> detalharDTO = inscricaoService.listarInscricoes();
