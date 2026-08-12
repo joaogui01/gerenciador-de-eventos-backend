@@ -13,6 +13,9 @@ import Projeto.Gerenciador_Eventos.entity.Participante;
 import Projeto.Gerenciador_Eventos.entity.enums.StatusGeral;
 
 public interface InscricaoRepository extends JpaRepository<Inscricao, Long> {
+
+	boolean existsByEventoAndParticipanteAndStatusGeral(Evento evento, Participante participante, StatusGeral status);
+
 	@Query("SELECT i FROM Inscricao i WHERE " +
 	           "(:evento IS NULL OR i.evento = :evento) AND " +
 	           "(:participante IS NULL OR i.participante = :participante) AND " +
