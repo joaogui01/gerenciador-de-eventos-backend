@@ -49,6 +49,12 @@ public class ParticipanteService {
 		return new DadosDetalharParticipante(participante);
 	}
 	
+	public DadosDetalharParticipante detalharParticipante(Long id) {
+		Participante participante = participanteRepository.getReferenceById(id);
+		
+		return new DadosDetalharParticipante(participante);
+	}
+	
 	public List<DadosDetalharParticipante> listarParticipantes() {
 		List<Participante> participantes = participanteRepository.findAll();
 		List<DadosDetalharParticipante> detalharDTOs = new ArrayList<>();
