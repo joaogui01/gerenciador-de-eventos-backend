@@ -32,7 +32,7 @@ public class CheckInController {
 	public ResponseEntity<DadosDetalharCheckIn> cadastrarCheckIn (@RequestBody @Valid DadosCadastroCheckIn dados, UriComponentsBuilder uriBuilder) {
 		DadosDetalharCheckIn detalharDTO = checkInService.cadastrarCheckIn(dados);
 		
-		var uri = uriBuilder.path("/checkin/cadastrar/{id}").buildAndExpand(detalharDTO.idCheckIn()).toUri();
+		var uri = uriBuilder.path("/checkin/detalhar/{id}").buildAndExpand(detalharDTO.idCheckIn()).toUri();
 		
 		return ResponseEntity.created(uri).body(detalharDTO);
 	}
@@ -45,6 +45,13 @@ public class CheckInController {
 		var uri = uriBuilder.path("/checkin/detalhar/{id}").buildAndExpand(detalharDTO.idCheckIn()).toUri();
 		
 		return ResponseEntity.created(uri).body(detalharDTO);
+	}
+	
+	@GetMapping("/detalhar/{id}")
+	public ResponseEntity<DadosDetalharCheckIn> detalharCheckIn(@PathVariable Long id) {
+		DadosDetalharCheckIn detalharDTO = checkInService.detalharCheckIn(id);
+		
+		return ResponseEntity.ok(detalharDTO);
 	}
 	
 	@GetMapping("/listar")
