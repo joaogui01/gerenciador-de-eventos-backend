@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import Projeto.Gerenciador_Eventos.dto.DadosAtualizarEvento;
 import Projeto.Gerenciador_Eventos.dto.DadosCadastroEvento;
 import Projeto.Gerenciador_Eventos.dto.DadosDetalharEvento;
 import Projeto.Gerenciador_Eventos.dto.DadosListarEvento;
@@ -31,6 +32,16 @@ public class EventoController {
 	@PostMapping("/cadastrar")
 	public ResponseEntity<DadosDetalharEvento> cadastrarEvento(@RequestBody @Valid DadosCadastroEvento dados, UriComponentsBuilder uriBuilder) {
 		DadosDetalharEvento detalharDTO = eventoService.cadastrarEvento(dados);
+		
+		var uri = uriBuilder.path("/evento/detalhar/{id}").buildAndExpand(detalharDTO.idEvento()).toUri();
+		
+		return ResponseEntity.created(uri).body(detalharDTO);
+	}
+	
+	@PutMapping("/atualizar")
+	@Transactional
+	public ResponseEntity<DadosDetalharEvento> atualizarEvento(@RequestBody @Valid DadosAtualizarEvento dados, UriComponentsBuilder uriBuilder) {
+		DadosDetalharEvento detalharDTO = eventoService.atualizarEvento(dados);
 		
 		var uri = uriBuilder.path("/evento/detalhar/{id}").buildAndExpand(detalharDTO.idEvento()).toUri();
 		
