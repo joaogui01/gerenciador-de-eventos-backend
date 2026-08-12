@@ -32,18 +32,27 @@ public class InscricaoService {
 	
 	@Transactional
 	public DadosDetalharInscricao cadastrarInscricao(DadosCadastroInscricao dados) {
+		Evento evento = eventoRepository.getReferenceById(dados.idEvento());
+		Participante participante = participanteRepository.getReferenceById(dados.idParticipante());
+		
+		boolean jaInscrito = inscricaoRepository.existsByEventoAndParticipanteAndStatusGeral(evento, participante, StatusGeral.ATIVO);
+		if (jaInscrito) {
+			throw new IllegalStateException("Este participante já possui uma inscrição ativa neste evento.");
+		}
+		
+		if (evento.getVagasDisponiveisEvento() <= 0) {
+			throw new IllegalStateException("Não há vagas disponíveis para este evento.");
+		}
+		
 		Inscricao inscricao = new Inscricao();
 		inscricao.setDataInscricao(dados.dataInscricao());
-		
-		Evento evento = eventoRepository.getReferenceById(dados.idEvento());
 		inscricao.setEvento(evento);
-		
-		Participante participante = participanteRepository.getReferenceById(dados.idParticipante());
 		inscricao.setParticipante(participante);
-		
 		inscricao.setStatusGeral(StatusGeral.ATIVO);
 		
 		inscricaoRepository.save(inscricao);
+		
+		evento.setVagasDisponiveisEvento(evento.getVagasDisponiveisEvento() - 1);
 		
 		return new DadosDetalharInscricao(inscricao);
 	}
