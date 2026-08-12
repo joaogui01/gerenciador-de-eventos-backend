@@ -48,6 +48,12 @@ public class CheckInService {
 		return new DadosDetalharCheckIn(checkIn);
 	}
 	
+	public DadosDetalharCheckIn detalharCheckIn(Long id) {
+		CheckIn checkIn = checkInRepository.getReferenceById(id);
+		
+		return new DadosDetalharCheckIn(checkIn);
+	}
+	
 	public List<DadosDetalharCheckIn> listarCheckIns() {
 		List<CheckIn> checkins = checkInRepository.findAll();
 		List<DadosDetalharCheckIn> detalharDTOs = new ArrayList<>();
