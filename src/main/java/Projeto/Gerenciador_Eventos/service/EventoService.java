@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import org.springframework.stereotype.Service;
 
+import Projeto.Gerenciador_Eventos.dto.DadosAtualizarEvento;
 import Projeto.Gerenciador_Eventos.dto.DadosCadastroEvento;
 import Projeto.Gerenciador_Eventos.dto.DadosDetalharEvento;
 import Projeto.Gerenciador_Eventos.dto.DadosListarEvento;
@@ -35,6 +36,14 @@ public class EventoService {
 		evento.setStatusGeral(StatusGeral.ATIVO);
 		
 		eventoRepository.save(evento);
+		
+		return new DadosDetalharEvento(evento);
+	}
+	
+	@Transactional
+	public DadosDetalharEvento atualizarEvento(DadosAtualizarEvento dados) {
+		Evento evento = eventoRepository.getReferenceById(dados.idEvento());
+		evento.atualizarInformações(dados);
 		
 		return new DadosDetalharEvento(evento);
 	}
