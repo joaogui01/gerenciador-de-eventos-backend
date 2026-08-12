@@ -20,6 +20,11 @@ public class TratadorDeErros {
 		return ResponseEntity.notFound().build();
 	}
 
+	@ExceptionHandler(IllegalStateException.class)
+	public ResponseEntity<Object> tratarErroRegraDeNegocio(IllegalStateException ex) {
+		return ResponseEntity.badRequest().body(ex.getMessage());
+	}
+
 	@ExceptionHandler(MethodArgumentNotValidException.class)
 	public ResponseEntity<Object> tratarErro400(MethodArgumentNotValidException ex) {
 		List<FieldError> erros = ex.getFieldErrors();
