@@ -55,6 +55,12 @@ public class EventoService {
 		return new DadosDetalharEvento(evento);
 	}
 	
+	public DadosDetalharEvento detalharEvento(Long id) {
+		Evento evento = eventoRepository.getReferenceById(id);
+		
+		return new DadosDetalharEvento(evento);
+	}
+	
 	public List<DadosDetalharEvento> listarEventos() {
 		List<Evento> eventos = eventoRepository.findAll();
 		List<DadosDetalharEvento> detalharDTOs = new ArrayList<>();
