@@ -33,7 +33,7 @@ public class TicketController {
 	public ResponseEntity<DadosDetalharTicket> cadastrarTicket (@RequestBody @Valid DadosCadastroTicket dados, UriComponentsBuilder uriBuilder) {
 		DadosDetalharTicket detalharDTO = ticketService.cadastrarTicket(dados);
 		
-		var uri = uriBuilder.path("/ticket/cadastrar/{id}").buildAndExpand(detalharDTO.idTicket()).toUri();
+		var uri = uriBuilder.path("/ticket/detalhar/{id}").buildAndExpand(detalharDTO.idTicket()).toUri();
 		
 		return ResponseEntity.created(uri).body(detalharDTO);
 	}
@@ -56,6 +56,13 @@ public class TicketController {
 		var uri = uriBuilder.path("/ticket/detalhar/{id}").buildAndExpand(detalharDTO.idTicket()).toUri();
 		
 		return ResponseEntity.created(uri).body(detalharDTO);
+	}
+	
+	@GetMapping("/detalhar/{id}")
+	public ResponseEntity<DadosDetalharTicket> detalharTicket(@PathVariable Long id) {
+		DadosDetalharTicket detalharDTO = ticketService.detalharTicket(id);
+		
+		return ResponseEntity.ok(detalharDTO);
 	}
 	
 	@GetMapping("/listar")
