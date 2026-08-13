@@ -5,7 +5,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
-
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import Projeto.Gerenciador_Eventos.dto.DadosAtualizarEvento;
@@ -13,6 +14,7 @@ import Projeto.Gerenciador_Eventos.dto.DadosCadastroEvento;
 import Projeto.Gerenciador_Eventos.dto.DadosDetalharEvento;
 import Projeto.Gerenciador_Eventos.dto.DadosListarEvento;
 import Projeto.Gerenciador_Eventos.entity.Evento;
+import Projeto.Gerenciador_Eventos.entity.Usuario;
 import Projeto.Gerenciador_Eventos.entity.enums.StatusGeral;
 import Projeto.Gerenciador_Eventos.repository.EventoRepository;
 import jakarta.transaction.Transactional;
@@ -25,6 +27,8 @@ public class EventoService {
 	
 	@Transactional 
 	public DadosDetalharEvento cadastrarEvento(DadosCadastroEvento dados) {
+		Usuario usuarioLogado = usuarioLogado();
+		
 		Evento evento = new Evento();
 		evento.setNomeEvento(dados.nomeEvento());
 		evento.setDescricaoEvento(dados.descricaoEvento());
@@ -34,6 +38,7 @@ public class EventoService {
 		evento.setVagasDisponiveisEvento(dados.vagasTotaisEvento());
 		evento.setPrecoEvento(dados.precoEvento());
 		evento.setStatusGeral(StatusGeral.ATIVO);
+		evento.setOrganizador(usuarioLogado);
 		
 		eventoRepository.save(evento);
 		
@@ -43,6 +48,8 @@ public class EventoService {
 	@Transactional
 	public DadosDetalharEvento atualizarEvento(DadosAtualizarEvento dados) {
 		Evento evento = eventoRepository.getReferenceById(dados.idEvento());
+		validarPosse(evento);
+		
 		evento.atualizarInformações(dados);
 		
 		return new DadosDetalharEvento(evento);
@@ -51,6 +58,8 @@ public class EventoService {
 	@Transactional
 	public DadosDetalharEvento ativarEvento(Long id) {
 		Evento evento = eventoRepository.getReferenceById(id);
+		validarPosse(evento);
+		
 		evento.setStatusGeral(StatusGeral.ATIVO);
 		
 		return new DadosDetalharEvento(evento);
@@ -59,6 +68,8 @@ public class EventoService {
 	@Transactional
 	public DadosDetalharEvento inativarEvento(Long id) {
 		Evento evento = eventoRepository.getReferenceById(id);
+		validarPosse(evento);
+		
 		evento.setStatusGeral(StatusGeral.INATIVO);
 		
 		return new DadosDetalharEvento(evento);
@@ -99,5 +110,19 @@ public class EventoService {
 		}
 		
 		return detalharDTOs;
+	}
+	
+	// Só o organizador do evento (dono) ou um ADMIN pode alterar/ativar/inativar o evento.
+	private void validarPosse(Evento evento) {
+		Usuario usuarioLogado = usuarioLogado();
+		boolean ehDono = evento.getOrganizador().getIdUsuario().equals(usuarioLogado.getIdUsuario());
+		
+		if (!ehDono && !usuarioLogado.isAdmin()) {
+			throw new AccessDeniedException("Você não tem permissão para alterar este evento.");
+		}
+	}
+	
+	private Usuario usuarioLogado() {
+		return (Usuario) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 	}
 }

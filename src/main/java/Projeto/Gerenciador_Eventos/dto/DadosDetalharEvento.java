@@ -14,7 +14,9 @@ public record DadosDetalharEvento(
 		String localEvento,
 		Integer vagasTotaisEvento,
 		Integer vagasDisponiveisEvento,
-		BigDecimal precoEvento) {
+		BigDecimal precoEvento,
+		Long idOrganizador,
+		String nomeOrganizador) {
 	
 	public DadosDetalharEvento(Evento evento) {
 		this(
@@ -25,7 +27,9 @@ public record DadosDetalharEvento(
 			evento.getLocalEvento(),
 			evento.getVagasTotaisEvento(),
 			evento.getVagasDisponiveisEvento(),
-			evento.getPrecoEvento()
+			evento.getPrecoEvento(),
+			evento.getOrganizador().getIdUsuario(),
+			evento.getOrganizador().getNome()
 		);
 	}
 }

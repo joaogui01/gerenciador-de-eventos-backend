@@ -1,5 +1,7 @@
--- V1__criacao_tabelas.sql
--- Criação das tabelas do domínio Gerenciador de Eventos
+-- V2__criacao_tabelas.sql
+-- Criação das tabelas do domínio Gerenciador de Eventos.
+-- Não existe mais tabela "participante": todo participante é um usuário
+-- (tabela usuario, criada na V1). "evento" agora tem um dono (organizador).
 
 CREATE TABLE evento (
     id_evento BIGINT AUTO_INCREMENT PRIMARY KEY,
@@ -10,18 +12,9 @@ CREATE TABLE evento (
     vagas_totais_evento INT NOT NULL,
     vagas_disponiveis_evento INT NOT NULL,
     preco_evento DECIMAL(10,2) NOT NULL,
-    status_evento VARCHAR(20) NOT NULL
-);
-
-CREATE TABLE participante (
-    id_participante BIGINT AUTO_INCREMENT PRIMARY KEY,
-    nome_participante VARCHAR(150) NOT NULL,
-    email_participante VARCHAR(100) NOT NULL,
-    cpf_participante VARCHAR(11) NOT NULL,
-    telefone_participante VARCHAR(20),
-    status_participante VARCHAR(20) NOT NULL,
-    CONSTRAINT uk_participante_email UNIQUE (email_participante),
-    CONSTRAINT uk_participante_cpf UNIQUE (cpf_participante)
+    status_evento VARCHAR(20) NOT NULL,
+    id_organizador BIGINT NOT NULL,
+    CONSTRAINT fk_evento_organizador FOREIGN KEY (id_organizador) REFERENCES usuario (id_usuario)
 );
 
 CREATE TABLE inscricao (
@@ -31,7 +24,7 @@ CREATE TABLE inscricao (
     data_inscricao DATE NOT NULL,
     status_inscricao VARCHAR(20) NOT NULL,
     CONSTRAINT fk_inscricao_evento FOREIGN KEY (id_evento) REFERENCES evento (id_evento),
-    CONSTRAINT fk_inscricao_participante FOREIGN KEY (id_participante) REFERENCES participante (id_participante)
+    CONSTRAINT fk_inscricao_participante FOREIGN KEY (id_participante) REFERENCES usuario (id_usuario)
 );
 
 CREATE TABLE ticket (

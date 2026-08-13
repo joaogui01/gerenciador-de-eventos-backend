@@ -9,13 +9,15 @@ public record DadosDetalharInscricao(
 		Long idInscricao,
 		Long idEvento,
 		Long idParticipante,
+		String nomeParticipante,
 		LocalDate dataInscricao) {
 
 	public DadosDetalharInscricao(Inscricao inscricao) {
 		this(
 				inscricao.getIdInscricao(), 
 				inscricao.getEvento().getIdEvento(), 
-				inscricao.getParticipante().getIdParticipante(), 
+				inscricao.getParticipante().getIdUsuario(), 
+				inscricao.getParticipante().getNome(),
 				inscricao.getDataInscricao()
 		);
 	}

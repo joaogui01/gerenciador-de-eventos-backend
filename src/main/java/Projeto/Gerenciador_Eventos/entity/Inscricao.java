@@ -21,7 +21,7 @@ public class Inscricao {
 
     @ManyToOne
     @JoinColumn(name = "id_participante", nullable = false)
-    private Participante participante;
+    private Usuario participante;
 
     @Column(name = "data_inscricao", nullable = false)
     private LocalDate dataInscricao;
@@ -45,10 +45,10 @@ public class Inscricao {
     public void setEvento(Evento evento) {
         this.evento = evento;
     }
-    public Participante getParticipante() {
+    public Usuario getParticipante() {
         return participante;
     }
-    public void setParticipante(Participante participante) {
+    public void setParticipante(Usuario participante) {
         this.participante = participante;
     }
     public LocalDate getDataInscricao() {

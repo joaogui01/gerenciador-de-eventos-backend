@@ -15,6 +15,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import Projeto.Gerenciador_Eventos.dto.DadosCadastroCheckIn;
 import Projeto.Gerenciador_Eventos.dto.DadosDetalharCheckIn;
+import Projeto.Gerenciador_Eventos.dto.DadosEscanearTicket;
 import Projeto.Gerenciador_Eventos.dto.DadosListarCheckIn;
 import Projeto.Gerenciador_Eventos.service.CheckInService;
 import jakarta.transaction.Transactional;
@@ -45,6 +46,16 @@ public class CheckInController {
 		var uri = uriBuilder.path("/checkin/detalhar/{id}").buildAndExpand(detalharDTO.idCheckIn()).toUri();
 		
 		return ResponseEntity.created(uri).body(detalharDTO);
+	}
+	
+	// Endpoint principal do fluxo mobile: o organizador escaneia o QR code do participante
+	// e o app manda o texto lido (codigoHashTicket) pra cá. Confirma o check-in em uma chamada só.
+	@PostMapping("/escanear")
+	@Transactional
+	public ResponseEntity<DadosDetalharCheckIn> escanearTicket(@RequestBody @Valid DadosEscanearTicket dados) {
+		DadosDetalharCheckIn detalharDTO = checkInService.escanearTicket(dados);
+		
+		return ResponseEntity.ok(detalharDTO);
 	}
 	
 	@GetMapping("/detalhar/{id}")

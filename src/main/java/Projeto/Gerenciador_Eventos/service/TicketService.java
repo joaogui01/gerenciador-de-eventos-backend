@@ -2,8 +2,11 @@ package Projeto.Gerenciador_Eventos.service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import Projeto.Gerenciador_Eventos.dto.DadosCadastroTicket;
@@ -11,9 +14,11 @@ import Projeto.Gerenciador_Eventos.dto.DadosDetalharTicket;
 import Projeto.Gerenciador_Eventos.dto.DadosListarTicket;
 import Projeto.Gerenciador_Eventos.entity.Inscricao;
 import Projeto.Gerenciador_Eventos.entity.Ticket;
+import Projeto.Gerenciador_Eventos.entity.Usuario;
 import Projeto.Gerenciador_Eventos.entity.enums.StatusGeral;
 import Projeto.Gerenciador_Eventos.repository.InscricaoRepository;
 import Projeto.Gerenciador_Eventos.repository.TicketRepository;
+import Projeto.Gerenciador_Eventos.util.QrCodeGenerator;
 import jakarta.transaction.Transactional;
 
 @Service
@@ -29,18 +34,39 @@ public class TicketService {
 	public DadosDetalharTicket cadastrarTicket(DadosCadastroTicket dados) {
 		Inscricao inscricao = inscricaoRepository.getReferenceById(dados.idInscricao());
 		
+		Usuario usuarioLogado = usuarioLogado();
+		boolean ehDono = inscricao.getParticipante().getIdUsuario().equals(usuarioLogado.getIdUsuario());
+		if (!ehDono && !usuarioLogado.isAdmin()) {
+			throw new AccessDeniedException("Você só pode emitir ticket para a sua própria inscrição.");
+		}
+		
 		if (inscricao.getStatusGeral() != StatusGeral.ATIVO) {
 			throw new IllegalStateException("Não é possível emitir ticket para uma inscrição inativa.");
 		}
 		
 		Ticket ticket = new Ticket();
-		ticket.setCodigoHashTicket(dados.codigoHashTicket());
+		ticket.setCodigoHashTicket(UUID.randomUUID().toString());
 		ticket.setInscricao(inscricao);
 		ticket.setStatusGeral(StatusGeral.ATIVO);
 		
 		ticketRepository.save(ticket);
 		
 		return new DadosDetalharTicket(ticket);
+	}
+	
+	// Gera a imagem PNG do QR code do ticket. Só o dono do ticket (o próprio participante)
+	// ou um ADMIN pode ver o QR code — o organizador do evento não precisa vê-lo, ele
+	// só precisa escaneá-lo (ver CheckInService.escanearTicket).
+	public byte[] gerarQrCode(Long id) {
+		Ticket ticket = ticketRepository.getReferenceById(id);
+		
+		Usuario usuarioLogado = usuarioLogado();
+		boolean ehDono = ticket.getInscricao().getParticipante().getIdUsuario().equals(usuarioLogado.getIdUsuario());
+		if (!ehDono && !usuarioLogado.isAdmin()) {
+			throw new AccessDeniedException("Você só pode ver o QR code do seu próprio ticket.");
+		}
+		
+		return QrCodeGenerator.gerarPng(ticket.getCodigoHashTicket());
 	}
 	
 	@Transactional
@@ -92,5 +118,9 @@ public class TicketService {
 		}
 		
 		return detalharDTOs;
+	}
+	
+	private Usuario usuarioLogado() {
+		return (Usuario) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 	}
 }

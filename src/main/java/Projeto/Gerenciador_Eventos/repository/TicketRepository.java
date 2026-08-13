@@ -11,6 +11,9 @@ import Projeto.Gerenciador_Eventos.entity.Ticket;
 import Projeto.Gerenciador_Eventos.entity.enums.StatusGeral;
 
 public interface TicketRepository extends JpaRepository<Ticket, Long>{
+
+	Ticket findByCodigoHashTicket(String codigoHashTicket);
+
 	@Query("SELECT t FROM Ticket t WHERE " +
 	           "(:inscricao IS NULL OR t.inscricao = :inscricao) AND " +
 	           "(:codigo IS NULL OR t.codigoHashTicket = :codigo) AND " +

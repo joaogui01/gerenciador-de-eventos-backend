@@ -15,7 +15,7 @@ public record DadosListarInscricao(
 	public DadosListarInscricao(Inscricao inscricao) {
 		this(
 				inscricao.getEvento().getIdEvento(), 
-				inscricao.getParticipante().getIdParticipante(), 
+				inscricao.getParticipante().getIdUsuario(), 
 				inscricao.getDataInscricao(),
 				inscricao.getStatusGeral()
 		);

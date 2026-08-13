@@ -12,6 +12,9 @@ import Projeto.Gerenciador_Eventos.entity.Ticket;
 import Projeto.Gerenciador_Eventos.entity.enums.StatusCheckIn;
 
 public interface CheckInRepository extends JpaRepository<CheckIn, Long>{
+
+	CheckIn findByTicket(Ticket ticket);
+
 	@Query("SELECT c FROM CheckIn c WHERE " +
 	           "(:ticket IS NULL OR c.ticket = :ticket) AND " +
 	           "(:data IS NULL OR c.dataCheckIn = :data) AND " +

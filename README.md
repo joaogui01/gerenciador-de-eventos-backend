@@ -1,19 +1,26 @@
 # Gerenciador de Eventos
 
-API REST desenvolvida em **Java + Spring Boot** para gerenciamento de eventos, participantes, inscrições, tickets e check-ins.
+API REST desenvolvida em **Java + Spring Boot** para gerenciamento de eventos. Cada usuário pode criar e administrar seus próprios eventos (como organizador) e também se inscrever em eventos de outras pessoas (como participante) — a mesma conta cobre os dois papéis. Tickets são emitidos como QR code; o organizador escaneia o QR do participante na entrada para confirmar o check-in.
 
-> ⚠️ **Projeto em desenvolvimento.** Banco de dados, endpoints de detalhamento/atualização, regras de negócio de vagas/inscrição, tratamento de erros e autenticação já funcionam, mas ainda faltam pontos importantes — veja a seção [Status do projeto](#status-do-projeto).
+> ⚠️ **Projeto em desenvolvimento**, ainda não lançado publicamente. Veja a seção [Status do projeto](#status-do-projeto) antes de rodar.
 
 ## Sobre o projeto
 
-O sistema permite cadastrar eventos, registrar participantes, vincular participantes a eventos por meio de inscrições, emitir tickets para inscrições confirmadas e registrar o check-in do participante no dia do evento.
+Todo mundo que usa o sistema é um `Usuario` só — não existe uma conta separada para "quem organiza" e "quem participa". Com a mesma conta, você pode:
+
+- Criar e gerenciar seus próprios eventos (você vira o **organizador**/dono daquele evento).
+- Se inscrever em eventos de outras pessoas (você vira **participante** daquela inscrição).
+- Emitir o ticket (QR code) da sua própria inscrição.
+- Se você é organizador de um evento, escanear o QR code dos participantes na entrada para confirmar o check-in.
+
+Um usuário `ADMIN` tem acesso total ao sistema, sem restrição de dono. **O primeiro usuário cadastrado no sistema vira `ADMIN` automaticamente** — os demais entram como `USER`.
 
 Fluxo geral das entidades:
 
 ```
-Participante ─┐
-              ├─> Inscricao ─> Ticket ─> CheckIn
-Evento ───────┘
+Usuario (organizador) ──> Evento ──> Inscricao ──> Ticket ──> CheckIn
+                                        ↑
+Usuario (participante) ─────────────────┘
 ```
 
 ## Tecnologias
@@ -26,8 +33,8 @@ Evento ───────┘
   - Bean Validation
   - Flyway (migração de banco)
 - **JWT** (`com.auth0:java-jwt`) para autenticação via token
+- **ZXing** (`com.google.zxing`) para gerar o QR code dos tickets
 - **MySQL** (via `mysql-connector-j`)
-- **Lombok**
 - **Maven**
 
 ## Estrutura do projeto
@@ -36,11 +43,12 @@ Evento ───────┘
 src/main/java/Projeto/Gerenciador_Eventos/
 ├── controllers/     # Endpoints REST
 ├── dto/              # Records de entrada/saída (cadastro, listagem, detalhamento, erro, autenticação)
-├── entity/            # Entidades JPA (Evento, Participante, Inscricao, Ticket, CheckIn, Usuario)
-│   └── enums/          # StatusGeral, StatusCheckIn
+├── entity/            # Entidades JPA (Usuario, Evento, Inscricao, Ticket, CheckIn)
+│   └── enums/          # StatusGeral, StatusCheckIn, Perfil (ADMIN/USER)
 ├── handler/           # Tratamento global de exceções (TratadorDeErros)
 ├── repository/       # Interfaces Spring Data JPA
 ├── security/          # Configuração do Spring Security e filtro de autenticação JWT
+├── util/              # Geração de QR code (QrCodeGenerator)
 └── service/           # Regras de negócio
 ```
 
@@ -48,36 +56,43 @@ src/main/java/Projeto/Gerenciador_Eventos/
 
 | Entidade | Descrição | Status |
 |---|---|---|
-| **Evento** | Nome, descrição, data, local, vagas totais/disponíveis, preço | `ATIVO` / `INATIVO` |
-| **Participante** | Nome, e-mail (único), CPF (único), telefone | `ATIVO` / `INATIVO` |
-| **Inscricao** | Vincula um Participante a um Evento, com data de inscrição | `ATIVO` / `INATIVO` |
-| **Ticket** | Gerado a partir de uma Inscricao, com código hash único | `ATIVO` / `INATIVO` |
+| **Usuario** | Nome, login, senha (hash BCrypt), CPF, telefone, perfil (`ADMIN`/`USER`) | — |
+| **Evento** | Nome, descrição, data, local, vagas totais/disponíveis, preço, **organizador** (dono) | `ATIVO` / `INATIVO` |
+| **Inscricao** | Vincula um Usuario (participante) a um Evento, com data de inscrição | `ATIVO` / `INATIVO` |
+| **Ticket** | Gerado a partir de uma Inscricao, com código único (usado no QR code) | `ATIVO` / `INATIVO` |
 | **CheckIn** | Registro de check-in de um Ticket, com data/hora | `REALIZADO` / `NAO_REALIZADO` |
 
-## Autenticação
+## Autenticação e permissões
 
-A API usa autenticação via **JWT** (JSON Web Token). Todas as rotas exigem um token válido no header `Authorization`, exceto `/login` e `/usuario/cadastrar`.
+A API usa **JWT**. Todas as rotas exigem token válido, exceto `/login` e `/usuario/cadastrar`.
 
-### `/usuario`
-- `POST /usuario/cadastrar` — público. Corpo: `{ "login": "...", "senha": "..." }`. A senha é armazenada com hash (BCrypt), nunca em texto puro.
+- `POST /usuario/cadastrar` — público. Corpo: `{ "nome", "login", "senha", "cpf", "telefone" }`. Senha vira hash BCrypt. O primeiro usuário cadastrado vira `ADMIN`.
+- `POST /login` — público. Corpo: `{ "login", "senha" }`. Retorna `{ "token" }`.
+- Demais rotas: envie `Authorization: Bearer <token>`. Token expira em 2 horas.
 
-### `/login`
-- `POST /login` — público. Corpo: `{ "login": "...", "senha": "..." }`. Retorna `{ "token": "..." }` se as credenciais forem válidas.
+**Regras de posse (quem pode fazer o quê):**
 
-### Usando o token
+| Ação | Quem pode |
+|---|---|
+| Atualizar/ativar/inativar um evento | O organizador (dono) do evento, ou `ADMIN` |
+| Ativar/cancelar uma inscrição | O próprio participante (dono da inscrição), ou `ADMIN` |
+| Emitir ticket de uma inscrição | O próprio participante (dono da inscrição), ou `ADMIN` |
+| Ver o QR code de um ticket | O próprio participante (dono do ticket), ou `ADMIN` |
+| Confirmar check-in (escanear ticket) | O organizador do evento, ou `ADMIN` |
+| Cadastrar/detalhar/listar eventos | Qualquer usuário autenticado (todo mundo pode ver/procurar eventos pra se inscrever) |
 
-Em toda requisição para os demais endpoints, envie o token retornado no login no header:
-```
-Authorization: Bearer <token>
-```
-O token expira em 2 horas. Sem um token válido, a API retorna `403 Forbidden` antes mesmo de chegar no controller.
+Violação de posse retorna `403 Forbidden`.
 
 ## Endpoints implementados
 
-Cada recurso segue um padrão semelhante de CRUD parcial (cadastro, ativar/inativar, listagem e listagem com filtros):
+### `/usuario`
+- `POST /usuario/cadastrar`
+
+### `/login`
+- `POST /login`
 
 ### `/evento`
-- `POST /evento/cadastrar`
+- `POST /evento/cadastrar` — organizador = usuário logado
 - `GET /evento/detalhar/{id}`
 - `PUT /evento/atualizar`
 - `DELETE /evento/inativar/{id}`
@@ -85,16 +100,8 @@ Cada recurso segue um padrão semelhante de CRUD parcial (cadastro, ativar/inati
 - `GET /evento/listar`
 - `GET /evento/listar/filtro`
 
-### `/participante`
-- `POST /participante/cadastrar`
-- `GET /participante/detalhar/{id}`
-- `DELETE /participante/inativar/{id}`
-- `PUT /participante/reativar/{id}`
-- `GET /participante/listar`
-- `GET /participante/listar/filtro`
-
 ### `/inscricao`
-- `POST /inscricao/cadastrar`
+- `POST /inscricao/cadastrar` — corpo: `{ "idEvento", "dataInscricao" }`. Participante = usuário logado (auto-inscrição)
 - `GET /inscricao/detalhar/{id}`
 - `DELETE /inscricao/inativar/{id}`
 - `PUT /inscricao/reativar/{id}`
@@ -102,80 +109,91 @@ Cada recurso segue um padrão semelhante de CRUD parcial (cadastro, ativar/inati
 - `GET /inscricao/listar/filtro`
 
 ### `/ticket`
-- `POST /ticket/cadastrar`
+- `POST /ticket/cadastrar` — corpo: `{ "idInscricao" }`. Código do ticket é gerado pelo servidor
 - `GET /ticket/detalhar/{id}`
+- `GET /ticket/detalhar/{id}/qrcode` — devolve a imagem PNG do QR code
 - `DELETE /ticket/inativar/{id}`
 - `PUT /ticket/reativar/{id}`
 - `GET /ticket/listar`
 - `GET /ticket/listar/filtro`
 
 ### `/checkin`
-- `POST /checkin/cadastrar`
+- `POST /checkin/cadastrar` — cria um registro de check-in pendente (`NAO_REALIZADO`) pra um ticket
+- `PUT /checkin/realizarcheckin/{id}` — confirma o check-in pelo id do registro
+- `POST /checkin/escanear` — **fluxo principal pro app do organizador**: corpo `{ "codigoHashTicket" }` (o texto lido do QR code). Acha o ticket pelo código, valida que quem chama é o organizador do evento, e confirma o check-in em uma única chamada (cria o registro se não existir, ou atualiza se já existir)
 - `GET /checkin/detalhar/{id}`
-- `PUT /checkin/realizarcheckin/{id}`
 - `GET /checkin/listar`
 - `GET /checkin/listar/filtro`
 
 ### Respostas de erro
 
-- `403 Forbidden`: requisição sem token JWT válido no header `Authorization` (barrada pelo Spring Security antes de chegar no controller).
+- `403 Forbidden`: sem token válido, ou usuário sem permissão para a ação (violação de posse).
 - `404 Not Found`: id informado não existe.
-- `400 Bad Request`: falha de validação (`@Valid`, retorna lista de `{campo, mensagem}`) ou violação de regra de negócio (retorna a mensagem do erro), como:
-  - login ou senha inválidos ao tentar autenticar;
-  - login já cadastrado ao tentar criar um novo usuário;
-  - criar inscrição sem vagas disponíveis no evento;
-  - criar inscrição duplicada (mesmo participante + mesmo evento, ambos ativos);
-  - emitir ticket para uma inscrição que não está `ATIVO`.
+- `400 Bad Request`: falha de validação (`@Valid`) ou violação de regra de negócio, como:
+  - login ou senha inválidos ao autenticar;
+  - login ou CPF já cadastrado;
+  - criar inscrição sem vagas disponíveis, ou inscrição duplicada;
+  - emitir ticket para inscrição inativa;
+  - escanear ticket inexistente, inativo, ou já com check-in realizado.
 
 ## Status do projeto
 
-Este projeto **ainda não está pronto para produção**. Progresso até agora:
-
-- [x] **Configuração do banco de dados**: `application.properties` com as propriedades de conexão MySQL configuradas via variáveis de ambiente (`${DB_USERNAME}` / `${DB_PASSWORD}`). Esse arquivo **não é versionado** (está no `.gitignore`) por conter dados de acesso ao banco; existe um `application.properties.example` versionado como referência de quais propriedades preencher.
-- [x] **Migrações Flyway**: primeira migração (`V1__criacao_tabelas.sql`) criando as tabelas `evento`, `participante`, `inscricao`, `ticket` e `checkin`, refletindo as entidades JPA.
-- [x] **Endpoints de detalhamento (`GET /.../detalhar/{id}`)**: implementados para os 5 recursos (Evento, Participante, Inscricao, Ticket, CheckIn), seguindo o mesmo padrão de `getReferenceById` já usado em `ativar`/`inativar`.
-- [x] **Atualização de Evento**: `PUT /evento/atualizar` implementado, usando `DadosAtualizarEvento` e o método `Evento.atualizarInformações(...)`. Atualização é parcial — só sobrescreve os campos enviados (diferentes de `null`) no corpo da requisição.
-- [x] **Tratamento de erros**: `TratadorDeErros` (`@RestControllerAdvice`) implementado. `EntityNotFoundException` (id inexistente em `getReferenceById`) agora retorna `404`; `MethodArgumentNotValidException` (falha de `@Valid`) retorna `400` com a lista de campos inválidos; `IllegalStateException` (regras de negócio, ex: vagas esgotadas) retorna `400` com a mensagem do erro.
-- [x] **Regras de negócio de vagas**: `vagasDisponiveisEvento` é decrementado automaticamente ao criar uma inscrição, e a criação é bloqueada (`400`) se não houver vagas disponíveis.
-- [x] **Validações cruzadas**: bloqueada inscrição duplicada do mesmo participante ativo no mesmo evento, e bloqueada emissão de ticket para inscrição que não esteja `ATIVO`.
-- [x] **Segurança/autenticação**: autenticação via JWT implementada com Spring Security (`Usuario implements UserDetails`, `SecurityFilter`, `SecurityConfigurations`). Endpoints `/login` e `/usuario/cadastrar` são públicos; todo o resto exige token válido. Senhas armazenadas com hash BCrypt.
-  - ⚠️ Ainda não há sistema de papéis/permissões — todo usuário cadastrado tem o mesmo nível de acesso (`ROLE_USER`), e o cadastro de usuário é público (qualquer um pode criar uma conta). Vale revisar antes de produção.
-- [ ] **Testes automatizados**: apenas o teste padrão gerado pelo Spring Initializr (`GerenciadorEventosApplicationTests`) está presente.
-- [ ] **Documentação da API** (ex: Swagger/OpenAPI) ainda não configurada.
+- [x] Banco de dados configurado via variáveis de ambiente + migrações Flyway.
+- [x] Endpoints de detalhamento e atualização.
+- [x] Regras de negócio de vagas e validações cruzadas (inscrição duplicada, ticket de inscrição inativa).
+- [x] Tratamento global de erros (`404`/`400`/`403` padronizados).
+- [x] Autenticação via JWT com Spring Security.
+- [x] **Modelo de dono/organizador e permissões (`ADMIN`/`USER`)** — cada usuário administra seus próprios eventos e inscrições; `Participante` foi unificado com `Usuario` (participante também loga e se auto-inscreve).
+- [x] **QR code dos tickets** — geração da imagem e endpoint de escaneamento para check-in.
+- [ ] **Testes automatizados**: apenas o teste padrão gerado pelo Spring Initializr está presente.
+- [ ] **Documentação da API** (Swagger/OpenAPI) ainda não configurada.
+- [ ] **CORS**: ainda não configurado. Vai ser necessário assim que o frontend (site/app mobile) for hospedado em outro domínio.
+- [ ] **Gerenciamento de participantes pelo organizador**: hoje só o próprio participante ativa/cancela sua inscrição — o organizador ainda não tem uma forma de remover/gerenciar inscrições de outras pessoas no próprio evento.
 
 ## Como rodar
 
-Pré-requisitos: JDK 17, Maven (ou usar o wrapper `./mvnw`) e uma instância MySQL.
+Pré-requisitos: JDK 17, Maven (ou `./mvnw`) e uma instância MySQL.
 
-1. Copie `src/main/resources/application.properties.example` para `src/main/resources/application.properties` (esse último não é versionado).
-2. Crie o banco no MySQL, se ainda não existir:
-   ```sql
-   CREATE DATABASE gerenciador_eventos;
-   ```
-3. Defina as variáveis de ambiente com suas credenciais antes de subir a aplicação:
+⚠️ **Este projeto passou por uma mudança de estrutura de tabelas** (participante virou usuário, evento ganhou dono). Se você já tinha rodado uma versão anterior, **recrie o banco do zero**:
+```sql
+DROP DATABASE gerenciador_eventos;
+CREATE DATABASE gerenciador_eventos;
+```
+
+1. Copie `src/main/resources/application.properties.example` para `application.properties` (não é versionado).
+2. Defina as variáveis de ambiente:
    ```bash
-   # Linux/macOS
    export DB_USERNAME=seu_usuario
    export DB_PASSWORD=sua_senha
    export JWT_SECRET=um_segredo_forte_e_aleatorio
    ```
-   ```powershell
-   # Windows (PowerShell)
-   $env:DB_USERNAME="seu_usuario"
-   $env:DB_PASSWORD="sua_senha"
-   $env:JWT_SECRET="um_segredo_forte_e_aleatorio"
-   ```
-4. Rode a aplicação:
+3. Rode a aplicação:
    ```bash
    ./mvnw spring-boot:run
    ```
-5. A API sobe por padrão em `http://localhost:8080`. O Flyway aplica as migrações `V1__criacao_tabelas.sql` e `V2__criacao_tabela_usuario.sql` automaticamente na primeira execução.
-6. Crie um usuário (`POST /usuario/cadastrar`) e faça login (`POST /login`) para obter um token — veja a seção [Autenticação](#autenticação).
+4. A API sobe em `http://localhost:8080`. O Flyway aplica as migrações automaticamente (agora `V1` cria a tabela `usuario`, `V2` cria `evento`/`inscricao`/`ticket`/`checkin`).
+5. Cadastre o primeiro usuário (`POST /usuario/cadastrar`) — ele vira `ADMIN` automaticamente — e faça login (`POST /login`) pra pegar o token.
+
+## Hospedagem gratuita (para testar com amigos)
+
+Pesquisei as opções atuais (agosto de 2026) — muita coisa que era gratuita há um tempo (Railway, Heroku) deixou de ser. A combinação que ainda é genuinamente gratuita, sem cartão de crédito, hoje:
+
+- **[Render](https://render.com)** para hospedar a aplicação Spring Boot (free tier: sem cartão, mas o serviço "dorme" depois de 15 min sem uso — a primeira requisição depois disso demora uns 30-60s pra responder, o que é aceitável pra testar com amigos, mas não pra algo sempre ativo).
+- **[Aiven](https://aiven.io/free-mysql-database)** para o banco MySQL (free tier "always-on", 1GB, sem cartão, sem prazo de expiração — diferente do MySQL free do Render, que é só Postgres).
+
+Fluxo resumido: sobe o código pro GitHub → conecta o repositório no Render como Web Service → aponta as variáveis de ambiente (`DB_USERNAME`, `DB_PASSWORD`, `JWT_SECRET`, e a URL do banco Aiven) → Render builda e sobe automaticamente a cada push.
+
+Se quiser, posso escrever um passo a passo completo de deploy quando estiver pronto para isso.
 
 ## Próximos passos sugeridos
 
-1. ~~Configurar o `application.properties` e escrever a primeira migração Flyway.~~ ✅
-2. ~~Implementar os endpoints de detalhamento (`GET /.../detalhar/{id}`) para cada recurso.~~ ✅
-3. ~~Implementar a atualização de Evento usando `DadosAtualizarEvento`.~~ ✅
-4. ~~Adicionar tratamento global de exceções, incluindo retorno de 404 quando um `id` não existir.~~ ✅
-5. Escrever testes de integração para os principais fluxos (cadastro de evento → inscrição → ticket → check-in).
+1. ~~Banco de dados + Flyway.~~ ✅
+2. ~~Endpoints de detalhamento.~~ ✅
+3. ~~Atualização de Evento.~~ ✅
+4. ~~Tratamento global de exceções.~~ ✅
+5. ~~Autenticação JWT.~~ ✅
+6. ~~Dono do evento + permissões (`ADMIN`/`USER`).~~ ✅
+7. ~~QR code do ticket + escaneamento para check-in.~~ ✅
+8. Configurar CORS para o frontend.
+9. Deploy de teste (Render + Aiven).
+10. Testes de integração para os principais fluxos.

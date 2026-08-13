@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import Projeto.Gerenciador_Eventos.dto.DadosCadastroInscricao;
@@ -11,11 +13,11 @@ import Projeto.Gerenciador_Eventos.dto.DadosDetalharInscricao;
 import Projeto.Gerenciador_Eventos.dto.DadosListarInscricao;
 import Projeto.Gerenciador_Eventos.entity.Evento;
 import Projeto.Gerenciador_Eventos.entity.Inscricao;
-import Projeto.Gerenciador_Eventos.entity.Participante;
+import Projeto.Gerenciador_Eventos.entity.Usuario;
 import Projeto.Gerenciador_Eventos.entity.enums.StatusGeral;
 import Projeto.Gerenciador_Eventos.repository.EventoRepository;
 import Projeto.Gerenciador_Eventos.repository.InscricaoRepository;
-import Projeto.Gerenciador_Eventos.repository.ParticipanteRepository;
+import Projeto.Gerenciador_Eventos.repository.UsuarioRepository;
 import jakarta.transaction.Transactional;
 
 @Service
@@ -28,16 +30,16 @@ public class InscricaoService {
 	private EventoRepository eventoRepository;
 	
 	@Autowired
-	private ParticipanteRepository participanteRepository;
+	private UsuarioRepository usuarioRepository;
 	
 	@Transactional
 	public DadosDetalharInscricao cadastrarInscricao(DadosCadastroInscricao dados) {
+		Usuario participante = usuarioLogado();
 		Evento evento = eventoRepository.getReferenceById(dados.idEvento());
-		Participante participante = participanteRepository.getReferenceById(dados.idParticipante());
 		
 		boolean jaInscrito = inscricaoRepository.existsByEventoAndParticipanteAndStatusGeral(evento, participante, StatusGeral.ATIVO);
 		if (jaInscrito) {
-			throw new IllegalStateException("Este participante já possui uma inscrição ativa neste evento.");
+			throw new IllegalStateException("Você já possui uma inscrição ativa neste evento.");
 		}
 		
 		if (evento.getVagasDisponiveisEvento() <= 0) {
@@ -60,6 +62,8 @@ public class InscricaoService {
 	@Transactional
 	public DadosDetalharInscricao ativarInscricao(Long id) {
 		Inscricao inscricao = inscricaoRepository.getReferenceById(id);
+		validarPosse(inscricao);
+		
 		inscricao.setStatusGeral(StatusGeral.ATIVO);
 		
 		return new DadosDetalharInscricao(inscricao);
@@ -68,6 +72,8 @@ public class InscricaoService {
 	@Transactional
 	public DadosDetalharInscricao inativarInscricao(Long id) {
 		Inscricao inscricao = inscricaoRepository.getReferenceById(id);
+		validarPosse(inscricao);
+		
 		inscricao.setStatusGeral(StatusGeral.INATIVO);
 		
 		return new DadosDetalharInscricao(inscricao);
@@ -94,8 +100,8 @@ public class InscricaoService {
 		Evento evento = (parametros.idEvento() != null) ? 
 	            eventoRepository.getReferenceById(parametros.idEvento()) : null;
 	            
-	    Participante participante = (parametros.idParticipante() != null) ? 
-	            participanteRepository.getReferenceById(parametros.idParticipante()) : null;
+	    Usuario participante = (parametros.idParticipante() != null) ? 
+	            usuarioRepository.getReferenceById(parametros.idParticipante()) : null;
 	    
 		List<Inscricao> inscricoes = inscricaoRepository.buscarComFiltrosDinamicos(
 				evento, 
@@ -110,5 +116,21 @@ public class InscricaoService {
 		}
 		
 		return detalharDTOs;
+	}
+	
+	// Só o próprio participante (dono da inscrição) ou um ADMIN pode ativar/cancelar a inscrição.
+	// Nota: o organizador do evento ainda não tem permissão para gerenciar inscrições
+	// de outras pessoas no próprio evento — fica como próximo passo.
+	private void validarPosse(Inscricao inscricao) {
+		Usuario usuarioLogado = usuarioLogado();
+		boolean ehDono = inscricao.getParticipante().getIdUsuario().equals(usuarioLogado.getIdUsuario());
+		
+		if (!ehDono && !usuarioLogado.isAdmin()) {
+			throw new AccessDeniedException("Você não tem permissão para alterar esta inscrição.");
+		}
+	}
+	
+	private Usuario usuarioLogado() {
+		return (Usuario) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 	}
 }

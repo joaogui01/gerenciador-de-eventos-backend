@@ -13,6 +13,8 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import jakarta.validation.Valid;
 
@@ -48,6 +50,10 @@ public class Evento {
     @Enumerated(EnumType.STRING) 
     @Column(name = "status_evento", nullable = false)
     private StatusGeral statusGeral;
+
+    @ManyToOne
+    @JoinColumn(name = "id_organizador", nullable = false)
+    private Usuario organizador;
 	
 	public Evento() {
 		
@@ -106,6 +112,12 @@ public class Evento {
 	}
 	public void setStatusGeral(StatusGeral statusGeral) {
 		this.statusGeral= statusGeral;
+	}
+	public Usuario getOrganizador() {
+		return organizador;
+	}
+	public void setOrganizador(Usuario organizador) {
+		this.organizador = organizador;
 	}
 
 	@Override
