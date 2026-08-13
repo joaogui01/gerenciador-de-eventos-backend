@@ -174,17 +174,6 @@ CREATE DATABASE gerenciador_eventos;
 4. A API sobe em `http://localhost:8080`. O Flyway aplica as migrações automaticamente (agora `V1` cria a tabela `usuario`, `V2` cria `evento`/`inscricao`/`ticket`/`checkin`).
 5. Cadastre o primeiro usuário (`POST /usuario/cadastrar`) — ele vira `ADMIN` automaticamente — e faça login (`POST /login`) pra pegar o token.
 
-## Hospedagem gratuita (para testar com amigos)
-
-Pesquisei as opções atuais (agosto de 2026) — muita coisa que era gratuita há um tempo (Railway, Heroku) deixou de ser. A combinação que ainda é genuinamente gratuita, sem cartão de crédito, hoje:
-
-- **[Render](https://render.com)** para hospedar a aplicação Spring Boot (free tier: sem cartão, mas o serviço "dorme" depois de 15 min sem uso — a primeira requisição depois disso demora uns 30-60s pra responder, o que é aceitável pra testar com amigos, mas não pra algo sempre ativo).
-- **[Aiven](https://aiven.io/free-mysql-database)** para o banco MySQL (free tier "always-on", 1GB, sem cartão, sem prazo de expiração — diferente do MySQL free do Render, que é só Postgres).
-
-Fluxo resumido: sobe o código pro GitHub → conecta o repositório no Render como Web Service → aponta as variáveis de ambiente (`DB_USERNAME`, `DB_PASSWORD`, `JWT_SECRET`, e a URL do banco Aiven) → Render builda e sobe automaticamente a cada push.
-
-Se quiser, posso escrever um passo a passo completo de deploy quando estiver pronto para isso.
-
 ## Próximos passos sugeridos
 
 1. ~~Banco de dados + Flyway.~~ ✅
