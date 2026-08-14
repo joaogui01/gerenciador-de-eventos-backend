@@ -64,6 +64,14 @@ public class InscricaoService {
 		Inscricao inscricao = inscricaoRepository.getReferenceById(id);
 		validarPosse(inscricao);
 		
+		if (inscricao.getStatusGeral() == StatusGeral.INATIVO) {
+			Evento evento = inscricao.getEvento();
+			if (evento.getVagasDisponiveisEvento() <= 0) {
+				throw new IllegalStateException("Não há vagas disponíveis para reativar esta inscrição.");
+			}
+			evento.setVagasDisponiveisEvento(evento.getVagasDisponiveisEvento() - 1);
+		}
+		
 		inscricao.setStatusGeral(StatusGeral.ATIVO);
 		
 		return new DadosDetalharInscricao(inscricao);
@@ -73,6 +81,11 @@ public class InscricaoService {
 	public DadosDetalharInscricao inativarInscricao(Long id) {
 		Inscricao inscricao = inscricaoRepository.getReferenceById(id);
 		validarPosse(inscricao);
+		
+		if (inscricao.getStatusGeral() == StatusGeral.ATIVO) {
+			Evento evento = inscricao.getEvento();
+			evento.setVagasDisponiveisEvento(evento.getVagasDisponiveisEvento() + 1);
+		}
 		
 		inscricao.setStatusGeral(StatusGeral.INATIVO);
 		
@@ -118,14 +131,14 @@ public class InscricaoService {
 		return detalharDTOs;
 	}
 	
-	// Só o próprio participante (dono da inscrição) ou um ADMIN pode ativar/cancelar a inscrição.
-	// Nota: o organizador do evento ainda não tem permissão para gerenciar inscrições
-	// de outras pessoas no próprio evento — fica como próximo passo.
+	// O próprio participante (dono da inscrição), o organizador do evento em que essa
+	// inscrição foi feita, ou um ADMIN podem ativar/cancelar a inscrição.
 	private void validarPosse(Inscricao inscricao) {
 		Usuario usuarioLogado = usuarioLogado();
-		boolean ehDono = inscricao.getParticipante().getIdUsuario().equals(usuarioLogado.getIdUsuario());
+		boolean ehParticipante = inscricao.getParticipante().getIdUsuario().equals(usuarioLogado.getIdUsuario());
+		boolean ehOrganizadorDoEvento = inscricao.getEvento().getOrganizador().getIdUsuario().equals(usuarioLogado.getIdUsuario());
 		
-		if (!ehDono && !usuarioLogado.isAdmin()) {
+		if (!ehParticipante && !ehOrganizadorDoEvento && !usuarioLogado.isAdmin()) {
 			throw new AccessDeniedException("Você não tem permissão para alterar esta inscrição.");
 		}
 	}

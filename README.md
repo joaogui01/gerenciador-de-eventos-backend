@@ -34,6 +34,8 @@ Usuario (participante) ─────────────────┘
   - Flyway (migração de banco)
 - **JWT** (`com.auth0:java-jwt`) para autenticação via token
 - **ZXing** (`com.google.zxing`) para gerar o QR code dos tickets
+- **springdoc-openapi** para documentação interativa da API (Swagger UI)
+- **H2** (em memória, só em testes) + **JUnit 5** para os testes de integração
 - **MySQL** (via `mysql-connector-j`)
 - **Maven**
 
@@ -75,7 +77,7 @@ A API usa **JWT**. Todas as rotas exigem token válido, exceto `/login` e `/usua
 | Ação | Quem pode |
 |---|---|
 | Atualizar/ativar/inativar um evento | O organizador (dono) do evento, ou `ADMIN` |
-| Ativar/cancelar uma inscrição | O próprio participante (dono da inscrição), ou `ADMIN` |
+| Ativar/cancelar uma inscrição | O próprio participante (dono da inscrição), o organizador do evento, ou `ADMIN` |
 | Emitir ticket de uma inscrição | O próprio participante (dono da inscrição), ou `ADMIN` |
 | Ver o QR code de um ticket | O próprio participante (dono do ticket), ou `ADMIN` |
 | Confirmar check-in (escanear ticket) | O organizador do evento, ou `ADMIN` |
@@ -145,10 +147,22 @@ Violação de posse retorna `403 Forbidden`.
 - [x] Autenticação via JWT com Spring Security.
 - [x] **Modelo de dono/organizador e permissões (`ADMIN`/`USER`)** — cada usuário administra seus próprios eventos e inscrições; `Participante` foi unificado com `Usuario` (participante também loga e se auto-inscreve).
 - [x] **QR code dos tickets** — geração da imagem e endpoint de escaneamento para check-in.
-- [ ] **Testes automatizados**: apenas o teste padrão gerado pelo Spring Initializr está presente.
-- [ ] **Documentação da API** (Swagger/OpenAPI) ainda não configurada.
-- [ ] **CORS**: ainda não configurado. Vai ser necessário assim que o frontend (site/app mobile) for hospedado em outro domínio.
-- [ ] **Gerenciamento de participantes pelo organizador**: hoje só o próprio participante ativa/cancela sua inscrição — o organizador ainda não tem uma forma de remover/gerenciar inscrições de outras pessoas no próprio evento.
+- [x] **Testes automatizados**: teste de integração (`FluxoPrincipalIntegrationTest`) cobrindo o fluxo completo (cadastro → login → evento → inscrição → ticket → check-in) e as regras de posse/negócio, usando H2 em memória. Ainda é só um arquivo — cobertura pode crescer.
+- [x] **Documentação da API (Swagger/OpenAPI)**: disponível em `/swagger-ui.html` com a aplicação rodando (JSON da especificação em `/v3/api-docs`).
+- [x] **Gerenciamento de participantes pelo organizador**: o organizador do evento agora também pode ativar/cancelar inscrições de outras pessoas no próprio evento (antes só o próprio participante conseguia).
+- [x] **CORS**: configurado via Spring Security, liberando o(s) domínio(s) do frontend definidos em `api.cors.allowed-origins` (variável de ambiente `CORS_ALLOWED_ORIGINS`).
+
+## Documentação interativa (Swagger)
+
+Com a aplicação rodando, acesse `http://localhost:8080/swagger-ui.html` para ver e testar todos os endpoints direto no navegador. Para chamar rotas autenticadas por ali, clique em "Authorize" (canto superior direito) e cole o token retornado por `/login` (sem o prefixo `Bearer `).
+
+## Rodando os testes
+
+```bash
+./mvnw test
+```
+
+Os testes usam H2 em memória (não precisa MySQL rodando para testar) e o Hibernate cria o schema direto das entidades, sem passar pelas migrações Flyway — ou seja, os testes validam o comportamento da aplicação, mas não substituem rodar a aplicação de verdade contra o MySQL pra validar as migrações em si.
 
 ## Como rodar
 
@@ -166,6 +180,7 @@ CREATE DATABASE gerenciador_eventos;
    export DB_USERNAME=seu_usuario
    export DB_PASSWORD=sua_senha
    export JWT_SECRET=um_segredo_forte_e_aleatorio
+   export CORS_ALLOWED_ORIGINS=http://localhost:3000
    ```
 3. Rode a aplicação:
    ```bash
@@ -183,6 +198,8 @@ CREATE DATABASE gerenciador_eventos;
 5. ~~Autenticação JWT.~~ ✅
 6. ~~Dono do evento + permissões (`ADMIN`/`USER`).~~ ✅
 7. ~~QR code do ticket + escaneamento para check-in.~~ ✅
-8. Configurar CORS para o frontend.
-9. Deploy de teste (Render + Aiven).
-10. Testes de integração para os principais fluxos.
+8. ~~Testes automatizados do fluxo principal.~~ ✅
+9. ~~Documentação da API (Swagger/OpenAPI).~~ ✅
+10. ~~Gerenciamento de participantes pelo organizador.~~ ✅
+11. ~~Configurar CORS para o frontend.~~ ✅
+12. Deploy de teste.
