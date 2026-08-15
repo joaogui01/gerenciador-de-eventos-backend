@@ -3,7 +3,12 @@
     {
       "name": "api.security.token.secret",
       "type": "java.lang.String",
-      "description": "Segredo usado para assinar e validar os tokens JWT gerados pela aplicação."
+      "description": "Segredo usado para assinar e validar os tokens JWT gerados pela aplicacao."
+    },
+    {
+      "name": "api.cors.allowed-origins",
+      "type": "java.lang.String",
+      "description": "Lista de origens (dominios do frontend), separadas por virgula, autorizadas a chamar a API pelo navegador."
     }
   ]
 }
