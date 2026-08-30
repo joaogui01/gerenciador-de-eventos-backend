@@ -32,6 +32,9 @@ public class InscricaoService {
 	@Autowired
 	private UsuarioRepository usuarioRepository;
 	
+	@Autowired
+	private NotificacaoService notificacaoService;
+	
 	@Transactional
 	public DadosDetalharInscricao cadastrarInscricao(DadosCadastroInscricao dados) {
 		Usuario participante = usuarioLogado();
@@ -55,6 +58,12 @@ public class InscricaoService {
 		inscricaoRepository.save(inscricao);
 		
 		evento.setVagasDisponiveisEvento(evento.getVagasDisponiveisEvento() - 1);
+		
+		notificacaoService.criarNotificacao(
+				evento.getOrganizador(),
+				"Novo Integrante No Seu Evento!",
+				"Uma nova pessoa entrou no seu evento " + evento.getNomeEvento() + ". Confira os participantes!"
+		);
 		
 		return new DadosDetalharInscricao(inscricao);
 	}

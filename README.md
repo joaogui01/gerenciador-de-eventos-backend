@@ -89,6 +89,9 @@ Violação de posse retorna `403 Forbidden`.
 
 ### `/usuario`
 - `POST /usuario/cadastrar`
+- `GET /usuario/meuperfil` — dados do usuário logado
+- `PUT /usuario/atualizar` — corpo: `{ "nome", "login", "telefone" }` (todos opcionais; CPF não é editável)
+- `PUT /usuario/alterar-senha` — corpo: `{ "senhaAtual", "novaSenha" }`
 
 ### `/login`
 - `POST /login`
@@ -127,6 +130,13 @@ Violação de posse retorna `403 Forbidden`.
 - `GET /checkin/listar`
 - `GET /checkin/listar/filtro`
 
+### `/notificacao`
+- `GET /notificacao/listar` — notificações do usuário logado, mais recentes primeiro
+- `GET /notificacao/naolidas/contador` — quantidade de não lidas (pro selo no sino do app)
+- `PUT /notificacao/marcarlida/{id}`
+
+Sem endpoint de criação: notificações são geradas internamente por outros services, não por chamada direta da API. Hoje o único gatilho implementado é o organizador ser avisado quando alguém se inscreve no evento dele (`InscricaoService.cadastrarInscricao`). Não existe envio por e-mail/push — o app precisa consultar `/notificacao/listar` ou `/notificacao/naolidas/contador` periodicamente (polling).
+
 ### Respostas de erro
 
 - `403 Forbidden`: sem token válido, ou usuário sem permissão para a ação (violação de posse).
@@ -148,6 +158,9 @@ Violação de posse retorna `403 Forbidden`.
 - [x] **Modelo de dono/organizador e permissões (`ADMIN`/`USER`)** — cada usuário administra seus próprios eventos e inscrições; `Participante` foi unificado com `Usuario` (participante também loga e se auto-inscreve).
 - [x] **QR code dos tickets** — geração da imagem e endpoint de escaneamento para check-in.
 - [x] **Testes automatizados**: teste de integração (`FluxoPrincipalIntegrationTest`) cobrindo o fluxo completo (cadastro → login → evento → inscrição → ticket → check-in) e as regras de posse/negócio, usando H2 em memória. Ainda é só um arquivo — cobertura pode crescer.
+- [x] **Atualizar perfil e alterar senha** — `PUT /usuario/atualizar` e `PUT /usuario/alterar-senha`, compatíveis com a tela "Editar Meu Perfil" do frontend.
+- [x] **Notificações** — entidade, tabela (`V3`) e endpoints prontos. Gatilho implementado: organizador é notificado quando alguém se inscreve no evento dele. Sem envio por e-mail/push; o frontend precisa fazer polling.
+- [ ] **Recuperar senha**: decisão consciente de não implementar por enquanto — exigiria um provedor de e-mail configurado (SMTP) para ser seguro. Uma versão sem e-mail teria uma falha grave (qualquer um resetaria a senha de qualquer usuário só sabendo o login).
 - [x] **Documentação da API (Swagger/OpenAPI)**: disponível em `/swagger-ui.html` com a aplicação rodando (JSON da especificação em `/v3/api-docs`).
 - [x] **Gerenciamento de participantes pelo organizador**: o organizador do evento agora também pode ativar/cancelar inscrições de outras pessoas no próprio evento (antes só o próprio participante conseguia).
 - [x] **CORS**: configurado via Spring Security, liberando o(s) domínio(s) do frontend definidos em `api.cors.allowed-origins` (variável de ambiente `CORS_ALLOWED_ORIGINS`).
