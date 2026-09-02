@@ -44,7 +44,7 @@ public class Evento {
     @Column(name = "vagas_disponiveis_evento", nullable = false)
     private Integer vagasDisponiveisEvento;
 
-    @Column(name = "preco_evento", nullable = false, precision = 10, scale = 2)
+    @Column(name = "preco_evento", nullable = true, precision = 10, scale = 2)
     private BigDecimal precoEvento;
 
     @Enumerated(EnumType.STRING) 

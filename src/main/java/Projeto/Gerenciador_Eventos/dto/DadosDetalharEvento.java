@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 
 import Projeto.Gerenciador_Eventos.entity.Evento;
+import Projeto.Gerenciador_Eventos.entity.enums.StatusGeral;
 
 public record DadosDetalharEvento(
 		
@@ -15,6 +16,7 @@ public record DadosDetalharEvento(
 		Integer vagasTotaisEvento,
 		Integer vagasDisponiveisEvento,
 		BigDecimal precoEvento,
+		StatusGeral statusGeral,
 		Long idOrganizador,
 		String nomeOrganizador) {
 	
@@ -28,6 +30,7 @@ public record DadosDetalharEvento(
 			evento.getVagasTotaisEvento(),
 			evento.getVagasDisponiveisEvento(),
 			evento.getPrecoEvento(),
+			evento.getStatusGeral(),
 			evento.getOrganizador().getIdUsuario(),
 			evento.getOrganizador().getNome()
 		);
