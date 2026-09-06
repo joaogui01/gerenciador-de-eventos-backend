@@ -72,6 +72,8 @@ public class TicketService {
 	@Transactional
 	public DadosDetalharTicket ativarTicket(Long id) {
 		Ticket ticket = ticketRepository.getReferenceById(id);
+		validarPosse(ticket);
+		
 		ticket.setStatusGeral(StatusGeral.ATIVO);
 		
 		return new DadosDetalharTicket(ticket);
@@ -80,6 +82,8 @@ public class TicketService {
 	@Transactional
 	public DadosDetalharTicket inativarTicket(Long id) {
 		Ticket ticket = ticketRepository.getReferenceById(id);
+		validarPosse(ticket);
+		
 		ticket.setStatusGeral(StatusGeral.INATIVO);
 		
 		return new DadosDetalharTicket(ticket);
@@ -118,6 +122,22 @@ public class TicketService {
 		}
 		
 		return detalharDTOs;
+	}
+	
+	/*
+	 * Só o dono do ticket (o participante da inscrição), o organizador do evento ou um
+	 * ADMIN podem ativar/inativar um ticket. Sem isso, qualquer usuário autenticado
+	 * conseguia inativar o ticket de outra pessoa e impedir o check-in dela na entrada
+	 * (escanearTicket recusa ticket inativo).
+	 */
+	private void validarPosse(Ticket ticket) {
+		Usuario usuarioLogado = usuarioLogado();
+		boolean ehDono = ticket.getInscricao().getParticipante().getIdUsuario().equals(usuarioLogado.getIdUsuario());
+		boolean ehOrganizadorDoEvento = ticket.getInscricao().getEvento().getOrganizador().getIdUsuario().equals(usuarioLogado.getIdUsuario());
+		
+		if (!ehDono && !ehOrganizadorDoEvento && !usuarioLogado.isAdmin()) {
+			throw new AccessDeniedException("Você não tem permissão para alterar este ticket.");
+		}
 	}
 	
 	private Usuario usuarioLogado() {

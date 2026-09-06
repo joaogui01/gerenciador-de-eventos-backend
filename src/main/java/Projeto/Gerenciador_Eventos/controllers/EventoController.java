@@ -40,32 +40,26 @@ public class EventoController {
 	
 	@PutMapping("/atualizar")
 	@Transactional
-	public ResponseEntity<DadosDetalharEvento> atualizarEvento(@RequestBody @Valid DadosAtualizarEvento dados, UriComponentsBuilder uriBuilder) {
+	public ResponseEntity<DadosDetalharEvento> atualizarEvento(@RequestBody @Valid DadosAtualizarEvento dados) {
 		DadosDetalharEvento detalharDTO = eventoService.atualizarEvento(dados);
 		
-		var uri = uriBuilder.path("/evento/detalhar/{id}").buildAndExpand(detalharDTO.idEvento()).toUri();
-		
-		return ResponseEntity.created(uri).body(detalharDTO);
+		return ResponseEntity.ok(detalharDTO);
 	}
 	
 	@DeleteMapping("/inativar/{id}")
 	@Transactional
-	public ResponseEntity<DadosDetalharEvento> inativarEvento(@PathVariable Long id, UriComponentsBuilder uriBuilder) {
+	public ResponseEntity<DadosDetalharEvento> inativarEvento(@PathVariable Long id) {
 		DadosDetalharEvento detalharDTO = eventoService.inativarEvento(id);
 		
-		var uri = uriBuilder.path("/evento/detalhar/{id}").buildAndExpand(detalharDTO.idEvento()).toUri();
-		
-		return ResponseEntity.created(uri).body(detalharDTO);
+		return ResponseEntity.ok(detalharDTO);
 	}
 	
 	@PutMapping("/reativar/{id}")
 	@Transactional
-	public ResponseEntity<DadosDetalharEvento> ativarEvento(@PathVariable Long id, UriComponentsBuilder uriBuilder) {
+	public ResponseEntity<DadosDetalharEvento> ativarEvento(@PathVariable Long id) {
 		DadosDetalharEvento detalharDTO = eventoService.ativarEvento(id);
 		
-		var uri = uriBuilder.path("/evento/detalhar/{id}").buildAndExpand(detalharDTO.idEvento()).toUri();
-		
-		return ResponseEntity.created(uri).body(detalharDTO);
+		return ResponseEntity.ok(detalharDTO);
 	}
 	
 	@GetMapping("/detalhar/{id}")

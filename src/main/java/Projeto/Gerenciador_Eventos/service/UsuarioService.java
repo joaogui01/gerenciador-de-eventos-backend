@@ -57,7 +57,7 @@ public class UsuarioService {
 
 	@Transactional
 	public DadosDetalharUsuario atualizarUsuario(DadosAtualizarUsuario dados) {
-		Usuario usuario = usuarioLogado();
+		Usuario usuario = usuarioLogadoGerenciado();
 
 		if (dados.login() != null && !dados.login().equals(usuario.getLogin())) {
 			if (usuarioRepository.findByLogin(dados.login()) != null) {
@@ -79,7 +79,7 @@ public class UsuarioService {
 
 	@Transactional
 	public void alterarSenha(DadosAlterarSenha dados) {
-		Usuario usuario = usuarioLogado();
+		Usuario usuario = usuarioLogadoGerenciado();
 
 		if (!passwordEncoder.matches(dados.senhaAtual(), usuario.getPassword())) {
 			throw new IllegalStateException("A senha atual informada está incorreta.");
@@ -90,6 +90,19 @@ public class UsuarioService {
 
 	private Usuario usuarioLogado() {
 		return (Usuario) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+	}
+
+	/*
+	 * O Usuario que está no SecurityContext foi carregado lá no SecurityFilter, fora de
+	 * qualquer transação — ou seja, é uma entidade DESANEXADA. Alterar um campo dele não
+	 * gera UPDATE nenhum (o JPA não faz dirty-checking em entidade desanexada), e o
+	 * endpoint respondia 200 sem ter salvado coisa alguma. Por isso todo método que
+	 * ESCREVE no usuário precisa recarregá-lo aqui dentro da transação, pra trabalhar com
+	 * uma entidade gerenciada. Pra só LER (detalharUsuarioLogado) o desanexado serve.
+	 */
+	private Usuario usuarioLogadoGerenciado() {
+		return usuarioRepository.findById(usuarioLogado().getIdUsuario())
+				.orElseThrow(() -> new IllegalStateException("Usuário autenticado não existe mais."));
 	}
 
 }

@@ -11,7 +11,7 @@ public record DadosListarTicket(
 
 	public DadosListarTicket(Ticket ticket) {
 		this(
-				ticket.getIdTicket(), 
+				ticket.getInscricao().getIdInscricao(), 
 				ticket.getCodigoHashTicket(),
 				ticket.getStatusGeral());
 	}

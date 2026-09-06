@@ -15,6 +15,7 @@ public record DadosCadastroEvento(
 		@NotBlank
 		String descricaoEvento,
 		
+		@NotNull
 		@FutureOrPresent
 		LocalDate dataEvento,
 		
@@ -24,7 +25,9 @@ public record DadosCadastroEvento(
 		@NotNull
 		Integer vagasTotaisEvento,
 		
-		@NotNull
+		// Ignorado no cadastro: quem cria o evento não escolhe quantas vagas já estão
+		// livres — o EventoService sempre inicia vagasDisponiveis = vagasTotais. O campo
+		// continua aqui só pra não quebrar clientes que já mandavam ele.
 		Integer vagasDisponiveisEvento,
 		
 		@Positive

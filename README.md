@@ -3,6 +3,8 @@
 API REST desenvolvida em **Java + Spring Boot** para gerenciamento de eventos. Cada usuário pode criar e administrar seus próprios eventos (como organizador) e também se inscrever em eventos de outras pessoas (como participante) — a mesma conta cobre os dois papéis. Tickets são emitidos como QR code; o organizador escaneia o QR do participante na entrada para confirmar o check-in.
 
 > ⚠️ **Projeto em desenvolvimento**, ainda não lançado publicamente. Veja a seção [Status do projeto](#status-do-projeto) antes de rodar.
+>
+> O frontend web ([Gerenciador de Eventos — Frontend](../Gerenciador_Eventos_FrontEnd)) já consome esta API de verdade, sem dados de exemplo.
 
 ## Sobre o projeto
 
@@ -80,6 +82,7 @@ A API usa **JWT**. Todas as rotas exigem token válido, exceto `/login` e `/usua
 | Ativar/cancelar uma inscrição | O próprio participante (dono da inscrição), o organizador do evento, ou `ADMIN` |
 | Emitir ticket de uma inscrição | O próprio participante (dono da inscrição), ou `ADMIN` |
 | Ver o QR code de um ticket | O próprio participante (dono do ticket), ou `ADMIN` |
+| Ativar/inativar um ticket | O dono do ticket, o organizador do evento, ou `ADMIN` |
 | Confirmar check-in (escanear ticket) | O organizador do evento, ou `ADMIN` |
 | Cadastrar/detalhar/listar eventos | Qualquer usuário autenticado (todo mundo pode ver/procurar eventos pra se inscrever) |
 
@@ -137,6 +140,11 @@ Violação de posse retorna `403 Forbidden`.
 
 Sem endpoint de criação: notificações são geradas internamente por outros services, não por chamada direta da API. Hoje o único gatilho implementado é o organizador ser avisado quando alguém se inscreve no evento dele (`InscricaoService.cadastrarInscricao`). Não existe envio por e-mail/push — o app precisa consultar `/notificacao/listar` ou `/notificacao/naolidas/contador` periodicamente (polling).
 
+### Códigos de sucesso
+
+- `201 Created` (com header `Location`): os `POST /*/cadastrar` que criam recurso — evento, inscrição, ticket, check-in.
+- `200 OK`: todo o resto, incluindo `PUT` de atualização/reativação e `DELETE` de inativação. Esses **não** criam recurso nenhum, então não respondem mais `201` (era assim antes e contradizia os próprios testes).
+
 ### Respostas de erro
 
 - `403 Forbidden`: sem token válido, ou usuário sem permissão para a ação (violação de posse).
@@ -157,13 +165,35 @@ Sem endpoint de criação: notificações são geradas internamente por outros s
 - [x] Autenticação via JWT com Spring Security.
 - [x] **Modelo de dono/organizador e permissões (`ADMIN`/`USER`)** — cada usuário administra seus próprios eventos e inscrições; `Participante` foi unificado com `Usuario` (participante também loga e se auto-inscreve).
 - [x] **QR code dos tickets** — geração da imagem e endpoint de escaneamento para check-in.
-- [x] **Testes automatizados**: teste de integração (`FluxoPrincipalIntegrationTest`) cobrindo o fluxo completo (cadastro → login → evento → inscrição → ticket → check-in) e as regras de posse/negócio, usando H2 em memória. Ainda é só um arquivo — cobertura pode crescer.
+- [x] **Testes automatizados**: `FluxoPrincipalIntegrationTest` cobre o fluxo completo (cadastro → login → evento → inscrição → ticket → check-in), as regras de posse/negócio e, agora, o **contrato com o frontend** — os endpoints e nomes de campo que o app web consome (`/usuario/meuperfil`, `/evento/listar`, `/inscricao/listar/filtro?idParticipante=`, `/ticket/listar/filtro?idInscricao=`, `/notificacao/listar`), além de token inválido responder `403` e não `500`. São 30 testes, todos passando.
 - [x] **Atualizar perfil e alterar senha** — `PUT /usuario/atualizar` e `PUT /usuario/alterar-senha`, compatíveis com a tela "Editar Meu Perfil" do frontend.
 - [x] **Notificações** — entidade, tabela (`V3`) e endpoints prontos. Gatilho implementado: organizador é notificado quando alguém se inscreve no evento dele. Sem envio por e-mail/push; o frontend precisa fazer polling.
 - [ ] **Recuperar senha**: decisão consciente de não implementar por enquanto — exigiria um provedor de e-mail configurado (SMTP) para ser seguro. Uma versão sem e-mail teria uma falha grave (qualquer um resetaria a senha de qualquer usuário só sabendo o login).
 - [x] **Documentação da API (Swagger/OpenAPI)**: disponível em `/swagger-ui.html` com a aplicação rodando (JSON da especificação em `/v3/api-docs`).
 - [x] **Gerenciamento de participantes pelo organizador**: o organizador do evento agora também pode ativar/cancelar inscrições de outras pessoas no próprio evento (antes só o próprio participante conseguia).
 - [x] **CORS**: configurado via Spring Security, liberando o(s) domínio(s) do frontend definidos em `api.cors.allowed-origins` (variável de ambiente `CORS_ALLOWED_ORIGINS`).
+- [x] **Auditoria feita antes de conectar o frontend** — ver [Correções da auditoria](#correções-da-auditoria).
+
+## Correções da auditoria
+
+Revisão feita antes de ligar o frontend na API. Tudo abaixo foi corrigido e coberto por teste:
+
+| O que estava errado | Efeito | Correção |
+|---|---|---|
+| `FluxoPrincipalIntegrationTest` importava `com.fasterxml.jackson.databind.ObjectMapper` (Jackson 2) | **A suíte de integração nem rodava**: o Spring Boot 4 autoconfigura o Jackson 3 (`tools.jackson`), então não existia bean desse tipo e os 16 testes falhavam de cara com `UnsatisfiedDependency` | Import trocado para `tools.jackson.databind.ObjectMapper` |
+| `PUT`/`DELETE` de atualizar/inativar/reativar respondiam `201 Created` com `Location` | Contradizia os testes (que esperavam `200`) e não fazia sentido: nenhuma dessas ações cria recurso | Passaram a responder `200 OK`; só os `POST /*/cadastrar` continuam `201` |
+| `SecurityFilter` não tratava token inválido/expirado | `TokenService.getSubject` lançava `RuntimeException` e a requisição virava **`500`** — o app não conseguia distinguir "sessão expirada" de "servidor com problema" | Token inválido, expirado ou de usuário removido agora simplesmente não autentica, e o Spring Security responde `403` |
+| `UsuarioService.atualizarUsuario` e `alterarSenha` alteravam o `Usuario` vindo do `SecurityContext` | **Bug grave e silencioso**: esse objeto é uma entidade *desanexada* (carregada no filtro, fora de transação), então o JPA não fazia dirty-checking. Os dois endpoints respondiam `200` com os dados novos **sem gravar nada no banco** — trocar a senha não trocava a senha | Ambos recarregam o usuário dentro da transação (`usuarioLogadoGerenciado()`). Os testes agora conferem o efeito persistido, não só o corpo da resposta |
+| `TicketService.ativarTicket`/`inativarTicket` não checavam posse | Qualquer usuário autenticado podia inativar o ticket de outra pessoa e **impedir o check-in dela na entrada** (`escanearTicket` recusa ticket inativo) | Só o dono do ticket, o organizador do evento ou `ADMIN` |
+| `DadosCadastroEvento.dataEvento` sem `@NotNull` | Data nula passava na validação e estourava `NOT NULL` no banco: **`500`** em vez de `400` | `@NotNull` adicionado (idem `DadosCadastroCheckIn.dataCheckInTicket`) |
+| `DadosCadastroEvento.vagasDisponiveisEvento` era `@NotNull`, mas o service ignora o valor (sempre inicia `vagasDisponiveis = vagasTotais`) | O cliente era obrigado a mandar um campo descartado | Campo agora é opcional; o servidor deriva de `vagasTotaisEvento` |
+| Construtor `DadosListarTicket(Ticket)` passava `ticket.getIdTicket()` no campo `idInscricao` | Id errado no DTO | Passa `ticket.getInscricao().getIdInscricao()` |
+
+### Pendências conhecidas (não corrigidas — exigem decisão de produto)
+
+- **Evento não tem horário**, só `dataEvento` (`LocalDate`). As telas do frontend mostravam "17h — 24/04/2026"; como o horário não existe no domínio, o app passou a exibir só a data. Se o horário for desejado, precisa de campo novo na entidade + migração `V5`.
+- **Não há endpoint para consultar outro usuário.** O `DadosDetalharInscricao` traz `idParticipante` e `nomeParticipante`, mas não login/telefone — então a tela "Detalhes do participante" mostra nome, data da inscrição, ticket e check-in, e não mais login/telefone. Expor esses dados exigiria decidir quem pode vê-los (hoje `/inscricao/listar/filtro` é aberto a qualquer autenticado, o que vazaria telefone de todo mundo).
+- **`GET /ticket/listar` devolve o `codigoHashTicket` de todos os tickets** para qualquer usuário autenticado. O risco prático é limitado (só o organizador do evento consegue escanear), mas o ideal é limitar as listagens ao escopo de quem chama.
 
 ## Documentação interativa (Swagger)
 
@@ -174,6 +204,8 @@ Com a aplicação rodando, acesse `http://localhost:8080/swagger-ui.html` para v
 ```bash
 ./mvnw test
 ```
+
+Resultado esperado: **30 testes, 0 falhas**.
 
 Os testes usam H2 em memória (não precisa MySQL rodando para testar) e o Hibernate cria o schema direto das entidades, sem passar pelas migrações Flyway — ou seja, os testes validam o comportamento da aplicação, mas não substituem rodar a aplicação de verdade contra o MySQL pra validar as migrações em si.
 
@@ -193,7 +225,8 @@ CREATE DATABASE gerenciador_eventos;
    export DB_USERNAME=seu_usuario
    export DB_PASSWORD=sua_senha
    export JWT_SECRET=um_segredo_forte_e_aleatorio
-   export CORS_ALLOWED_ORIGINS=http://localhost:3000
+   # porta padrão do Vite (frontend); aceita vários domínios separados por vírgula
+   export CORS_ALLOWED_ORIGINS=http://localhost:5173
    ```
 3. Rode a aplicação:
    ```bash
@@ -215,4 +248,8 @@ CREATE DATABASE gerenciador_eventos;
 9. ~~Documentação da API (Swagger/OpenAPI).~~ ✅
 10. ~~Gerenciamento de participantes pelo organizador.~~ ✅
 11. ~~Configurar CORS para o frontend.~~ ✅
-12. Deploy de teste.
+12. ~~Auditoria do backend antes de conectar o frontend.~~ ✅
+13. ~~Conectar o frontend na API de verdade.~~ ✅
+14. Restringir as listagens (`/ticket/listar`, `/inscricao/listar`) ao escopo de quem chama.
+15. Decidir se o evento precisa de horário (campo novo + migração).
+16. Deploy de teste.

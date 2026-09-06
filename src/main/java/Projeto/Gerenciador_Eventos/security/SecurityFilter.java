@@ -31,12 +31,24 @@ public class SecurityFilter extends OncePerRequestFilter {
 
 		String tokenJWT = recuperarToken(request);
 
+		/*
+		 * Token inválido, expirado ou de um usuário que não existe mais não pode derrubar
+		 * a requisição com erro 500: a gente simplesmente não autentica ninguém e deixa o
+		 * Spring Security responder 403. É isso que permite o frontend distinguir "sessão
+		 * expirada" (aí descarta o token salvo e manda pro login) de "servidor com problema".
+		 */
 		if (tokenJWT != null) {
-			String login = tokenService.getSubject(tokenJWT);
-			UserDetails usuario = usuarioRepository.findByLogin(login);
+			try {
+				String login = tokenService.getSubject(tokenJWT);
+				UserDetails usuario = usuarioRepository.findByLogin(login);
 
-			UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(usuario, null, usuario.getAuthorities());
-			SecurityContextHolder.getContext().setAuthentication(authentication);
+				if (usuario != null) {
+					UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(usuario, null, usuario.getAuthorities());
+					SecurityContextHolder.getContext().setAuthentication(authentication);
+				}
+			} catch (RuntimeException excecao) {
+				SecurityContextHolder.clearContext();
+			}
 		}
 
 		filterChain.doFilter(request, response);
@@ -45,11 +57,11 @@ public class SecurityFilter extends OncePerRequestFilter {
 	private String recuperarToken(HttpServletRequest request) {
 		String authorizationHeader = request.getHeader("Authorization");
 
-		if (authorizationHeader == null) {
+		if (authorizationHeader == null || !authorizationHeader.startsWith("Bearer ")) {
 			return null;
 		}
 
-		return authorizationHeader.replace("Bearer ", "");
+		return authorizationHeader.substring("Bearer ".length()).trim();
 	}
 
 }

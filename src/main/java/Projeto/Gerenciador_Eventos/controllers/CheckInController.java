@@ -40,12 +40,10 @@ public class CheckInController {
 	
 	@PutMapping("/realizarcheckin/{id}")
 	@Transactional
-	public ResponseEntity<DadosDetalharCheckIn> realizarCheckIn (@PathVariable Long id, UriComponentsBuilder uriBuilder) {
+	public ResponseEntity<DadosDetalharCheckIn> realizarCheckIn (@PathVariable Long id) {
 		DadosDetalharCheckIn detalharDTO = checkInService.realizarCheckIn(id);
 		
-		var uri = uriBuilder.path("/checkin/detalhar/{id}").buildAndExpand(detalharDTO.idCheckIn()).toUri();
-		
-		return ResponseEntity.created(uri).body(detalharDTO);
+		return ResponseEntity.ok(detalharDTO);
 	}
 	
 	// Endpoint principal do fluxo mobile: o organizador escaneia o QR code do participante

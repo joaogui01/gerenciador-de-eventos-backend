@@ -40,22 +40,18 @@ public class InscricaoController {
 	
 	@DeleteMapping("/inativar/{id}")
 	@Transactional
-	public ResponseEntity<DadosDetalharInscricao> inativarInscricao(@PathVariable Long id, UriComponentsBuilder uriBuilder) {
+	public ResponseEntity<DadosDetalharInscricao> inativarInscricao(@PathVariable Long id) {
 		DadosDetalharInscricao detalharDTO = inscricaoService.inativarInscricao(id);
 		
-		var uri = uriBuilder.path("/inscricao/detalhar/{id}").buildAndExpand(detalharDTO.idInscricao()).toUri();
-		
-		return ResponseEntity.created(uri).body(detalharDTO);
+		return ResponseEntity.ok(detalharDTO);
 	}
 	
 	@PutMapping("/reativar/{id}")
 	@Transactional
-	public ResponseEntity<DadosDetalharInscricao> ativarInscricao(@PathVariable Long id, UriComponentsBuilder uriBuilder) {
+	public ResponseEntity<DadosDetalharInscricao> ativarInscricao(@PathVariable Long id) {
 		DadosDetalharInscricao detalharDTO = inscricaoService.ativarInscricao(id);
 		
-		var uri = uriBuilder.path("/inscricao/detalhar/{id}").buildAndExpand(detalharDTO.idInscricao()).toUri();
-		
-		return ResponseEntity.created(uri).body(detalharDTO);
+		return ResponseEntity.ok(detalharDTO);
 	}
 	
 	@GetMapping("/detalhar/{id}")

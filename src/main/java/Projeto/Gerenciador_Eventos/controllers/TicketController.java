@@ -41,22 +41,18 @@ public class TicketController {
 	
 	@DeleteMapping("/inativar/{id}")
 	@Transactional
-	public ResponseEntity<DadosDetalharTicket> inativarTicket(@PathVariable Long id, UriComponentsBuilder uriBuilder) {
+	public ResponseEntity<DadosDetalharTicket> inativarTicket(@PathVariable Long id) {
 		DadosDetalharTicket detalharDTO = ticketService.inativarTicket(id);
 		
-		var uri = uriBuilder.path("/ticket/detalhar/{id}").buildAndExpand(detalharDTO.idTicket()).toUri();
-		
-		return ResponseEntity.created(uri).body(detalharDTO);
+		return ResponseEntity.ok(detalharDTO);
 	}
 	
 	@PutMapping("/reativar/{id}")
 	@Transactional
-	public ResponseEntity<DadosDetalharTicket> ativarTicket(@PathVariable Long id, UriComponentsBuilder uriBuilder) {
+	public ResponseEntity<DadosDetalharTicket> ativarTicket(@PathVariable Long id) {
 		DadosDetalharTicket detalharDTO = ticketService.ativarTicket(id);
 		
-		var uri = uriBuilder.path("/ticket/detalhar/{id}").buildAndExpand(detalharDTO.idTicket()).toUri();
-		
-		return ResponseEntity.created(uri).body(detalharDTO);
+		return ResponseEntity.ok(detalharDTO);
 	}
 	
 	@GetMapping("/detalhar/{id}")

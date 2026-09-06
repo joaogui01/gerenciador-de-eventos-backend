@@ -7,6 +7,7 @@ import jakarta.validation.constraints.PastOrPresent;
 
 public record DadosCadastroCheckIn(
 		
+		@NotNull
 		@PastOrPresent
 		LocalDateTime dataCheckInTicket,
 		
